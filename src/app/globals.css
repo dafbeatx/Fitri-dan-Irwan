@@ -40,6 +40,26 @@
   line-height: 2.2;
 }
 
+/* Form Input & Select & Textarea Styling */
+.input-wedding {
+  width: 100%;
+  border-radius: 0.75rem;
+  padding: 0.625rem 0.875rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  background-color: var(--color-ivory-50);
+  border: 1px solid var(--color-ivory-200);
+  color: var(--color-sage-900);
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.input-wedding:focus {
+  background-color: #ffffff;
+  border-color: var(--color-gold-400);
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: 2px;
+}
+
 /* Accessible focus ring - R-32 */
 *:focus-visible {
   outline: 2px solid #c3a16a;

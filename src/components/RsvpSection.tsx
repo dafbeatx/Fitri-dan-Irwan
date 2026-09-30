@@ -130,7 +130,7 @@ export function RsvpSection({ initialGuestName = "", onSuccess }: RsvpSectionPro
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Contoh: Bapak Ahmad Kurnia"
-                className="w-full px-4 py-3 rounded-xl bg-ivory-50 border border-ivory-200 text-sm text-sage-900 focus:bg-white focus:border-gold-400 transition-colors"
+                className="input-wedding"
               />
             </div>
 
@@ -145,7 +145,7 @@ export function RsvpSection({ initialGuestName = "", onSuccess }: RsvpSectionPro
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="Contoh: 08123456789"
-                className="w-full px-4 py-3 rounded-xl bg-ivory-50 border border-ivory-200 text-sm text-sage-900 focus:bg-white focus:border-gold-400 transition-colors"
+                className="input-wedding"
               />
             </div>
 
@@ -186,7 +186,7 @@ export function RsvpSection({ initialGuestName = "", onSuccess }: RsvpSectionPro
                   id="rsvp-guests"
                   value={guestsCount}
                   onChange={(e) => setGuestsCount(Number(e.target.value))}
-                  className="w-full px-4 py-3 rounded-xl bg-ivory-50 border border-ivory-200 text-sm text-sage-900 focus:bg-white focus:border-gold-400 transition-colors"
+                  className="input-wedding"
                 >
                   <option value={1}>1 Orang</option>
                   <option value={2}>2 Orang</option>
@@ -208,7 +208,7 @@ export function RsvpSection({ initialGuestName = "", onSuccess }: RsvpSectionPro
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder="Tuliskan catatan singkat jika ada..."
-                className="w-full px-4 py-3 rounded-xl bg-ivory-50 border border-ivory-200 text-sm text-sage-900 focus:bg-white focus:border-gold-400 transition-colors"
+                className="input-wedding"
               />
             </div>
 

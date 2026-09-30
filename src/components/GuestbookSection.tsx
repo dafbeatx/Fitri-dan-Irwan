@@ -24,7 +24,7 @@ export function GuestbookSection({ initialGuestName = "" }: GuestbookSectionProp
   const [attendance, setAttendance] = useState<AttendanceStatus>("hadir");
   const [message, setMessage] = useState("");
 
-  const loadEntries = useCallback(async () => {
+  const refreshEntries = useCallback(async () => {
     setIsLoading(true);
     try {
       const res = await getGuestbookEntries();
@@ -37,8 +37,25 @@ export function GuestbookSection({ initialGuestName = "" }: GuestbookSectionProp
   }, []);
 
   useEffect(() => {
-    loadEntries();
-  }, [loadEntries]);
+    let isMounted = true;
+    getGuestbookEntries()
+      .then((res) => {
+        if (isMounted) {
+          setEntries(res.data);
+          setIsLoading(false);
+        }
+      })
+      .catch(() => {
+        if (isMounted) {
+          setErrorMessage("Gagal memuat ucapan.");
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -162,7 +179,7 @@ export function GuestbookSection({ initialGuestName = "" }: GuestbookSectionProp
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Nama lengkap atau panggilan"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-ivory-50 border border-ivory-200 text-sm text-sage-900 focus:bg-white focus:border-gold-400 transition-colors"
+                className="input-wedding"
               />
             </div>
 
@@ -174,7 +191,7 @@ export function GuestbookSection({ initialGuestName = "" }: GuestbookSectionProp
                 id="guest-rel"
                 value={relationship}
                 onChange={(e) => setRelationship(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-ivory-50 border border-ivory-200 text-sm text-sage-900 focus:bg-white focus:border-gold-400 transition-colors"
+                className="input-wedding"
               >
                 <option value="Keluarga">Keluarga</option>
                 <option value="Sahabat">Sahabat</option>
@@ -193,7 +210,7 @@ export function GuestbookSection({ initialGuestName = "" }: GuestbookSectionProp
                 id="guest-attendance"
                 value={attendance}
                 onChange={(e) => setAttendance(e.target.value as AttendanceStatus)}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-ivory-50 border border-ivory-200 text-sm text-sage-900 focus:bg-white focus:border-gold-400 transition-colors"
+                className="input-wedding"
               >
                 <option value="hadir">Berencana Hadir</option>
                 <option value="ragu">Masih Ragu</option>
@@ -212,7 +229,7 @@ export function GuestbookSection({ initialGuestName = "" }: GuestbookSectionProp
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder="Tuliskan doa tulus untuk Fitri dan Irwan..."
-                className="w-full px-3.5 py-2.5 rounded-xl bg-ivory-50 border border-ivory-200 text-sm text-sage-900 focus:bg-white focus:border-gold-400 transition-colors"
+                className="input-wedding"
               />
             </div>
 
@@ -244,7 +261,7 @@ export function GuestbookSection({ initialGuestName = "" }: GuestbookSectionProp
             </h3>
             <button
               type="button"
-              onClick={loadEntries}
+              onClick={refreshEntries}
               className="text-xs text-sage-600 hover:text-sage-900 font-medium"
             >
               Segarkan

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState, useCallback } from "react";
-import { Music, VolumeX, Volume2 } from "lucide-react";
+import { VolumeX, Volume2 } from "lucide-react";
 
 interface AudioPlayerProps {
   autoPlayTriggered: boolean;
