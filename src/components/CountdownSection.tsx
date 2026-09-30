@@ -53,14 +53,14 @@ export function CountdownSection() {
 
   return (
     <div className="my-10 max-w-xl mx-auto px-4 text-center">
-      <div className="flex items-center justify-center gap-2 text-xs uppercase tracking-widest text-[#99753F] font-semibold mb-4">
-        <Clock className="w-4 h-4 text-[#C3A16A]" />
+      <div className="flex items-center justify-center gap-2 text-xs uppercase tracking-widest text-gold-600 font-semibold mb-4">
+        <Clock className="w-4 h-4 text-gold-400" />
         <span>Menghitung Hari Bahagia</span>
       </div>
 
       {timeLeft.isPast ? (
-        <div className="p-6 rounded-2xl bg-white/90 border border-[#C3A16A]/40 shadow-sm">
-          <p className="font-serif-cormorant text-2xl text-[#3F5244] font-medium">
+        <div className="p-6 rounded-2xl bg-white/90 border border-gold-400/40 shadow-sm">
+          <p className="font-serif-cormorant text-2xl text-sage-700 font-medium">
             Alhamdulillah, Acara Telah Berlangsung
           </p>
           <p className="text-sm text-[#556858] mt-1">
@@ -77,9 +77,9 @@ export function CountdownSection() {
           ].map((item, idx) => (
             <div
               key={idx}
-              className="p-3 sm:p-4 rounded-2xl bg-white/90 border border-[#EAE2D5] shadow-sm flex flex-col items-center justify-center"
+              className="p-3 sm:p-4 rounded-2xl bg-white/90 border border-ivory-200 shadow-sm flex flex-col items-center justify-center"
             >
-              <span className="font-serif-cormorant text-2xl sm:text-3xl md:text-4xl font-semibold text-[#1F2D22]">
+              <span className="font-serif-cormorant text-2xl sm:text-3xl md:text-4xl font-semibold text-sage-900">
                 {String(item.value).padStart(2, "0")}
               </span>
               <span className="text-[11px] sm:text-xs text-[#556858] uppercase tracking-wider mt-1">
@@ -95,9 +95,9 @@ export function CountdownSection() {
         href={googleCalendarUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full text-xs sm:text-sm font-medium text-[#FAF8F5] bg-[#4E6554] hover:bg-[#3F5244] active:scale-95 transition-all shadow-sm focus-visible:ring-2 focus-visible:ring-[#C3A16A] min-h-[44px]"
+        className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full text-xs sm:text-sm font-medium text-ivory-50 bg-sage-600 hover:bg-sage-700 active:scale-95 transition-all shadow-sm focus-visible:ring-2 focus-visible:ring-gold-400 min-h-11"
       >
-        <CalendarPlus className="w-4 h-4 text-[#F3EBD8]" />
+        <CalendarPlus className="w-4 h-4 text-gold-100" />
         <span>Simpan Tanggal ke Google Calendar</span>
       </a>
     </div>

@@ -44,7 +44,7 @@ export function WeddingClientPage() {
   }, [isCoverOpen]);
 
   return (
-    <div className="relative min-h-screen bg-[#FAF8F5]">
+    <div className="relative min-h-screen bg-ivory-50">
       {/* 1. Opening Cover Envelope */}
       <CoverScreen
         isOpen={isCoverOpen}

@@ -155,20 +155,20 @@ export function AudioPlayer({
         onClick={toggleMusic}
         type="button"
         aria-label={isPlaying ? "Jeda musik latar" : "Putar musik latar"}
-        className="group relative flex items-center gap-2 p-2.5 rounded-full bg-[#FAF8F5]/90 border border-[#C3A16A]/50 shadow-md backdrop-blur-sm transition-all hover:scale-105 active:scale-95 focus-visible:ring-2 focus-visible:ring-[#C3A16A] min-w-[44px] min-h-[44px]"
+        className="group relative flex items-center gap-2 p-2.5 rounded-full bg-ivory-50/90 border border-gold-400/50 shadow-md backdrop-blur-sm transition-all hover:scale-105 active:scale-95 focus-visible:ring-2 focus-visible:ring-gold-400 min-w-11 min-h-11"
       >
         <span
-          className={`flex items-center justify-center w-8 h-8 rounded-full bg-[#3F5244] text-[#FAF8F5] transition-transform ${
+          className={`flex items-center justify-center w-8 h-8 rounded-full bg-sage-700 text-ivory-50 transition-transform ${
             isPlaying ? "animate-spin-slow" : ""
           }`}
         >
           {isPlaying ? (
-            <Volume2 className="w-4 h-4 text-[#F3EBD8]" />
+            <Volume2 className="w-4 h-4 text-gold-100" />
           ) : (
-            <VolumeX className="w-4 h-4 text-[#F3EBD8]" />
+            <VolumeX className="w-4 h-4 text-gold-100" />
           )}
         </span>
-        <span className="hidden sm:inline-block pr-2 text-xs font-medium text-[#3F5244]">
+        <span className="hidden sm:inline-block pr-2 text-xs font-medium text-sage-700">
           {isPlaying ? "Musik Aktif" : "Putar Musik"}
         </span>
       </button>

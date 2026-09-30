@@ -12,10 +12,10 @@ export function AyatSection() {
     >
       <BismillahCalligraphy />
 
-      <div className="mt-8 p-6 sm:p-10 rounded-2xl bg-white/80 border border-[#EAE2D5] shadow-sm">
+      <div className="mt-8 p-6 sm:p-10 rounded-2xl bg-white/80 border border-ivory-200 shadow-sm">
         {/* Arabic Verse */}
         <p
-          className="font-arabic-verse text-xl sm:text-2xl md:text-3xl text-[#1F2D22] mb-6 leading-loose text-center"
+          className="font-arabic-verse text-xl sm:text-2xl md:text-3xl text-sage-900 mb-6 leading-loose text-center"
           dir="rtl"
           lang="ar"
         >
@@ -23,12 +23,12 @@ export function AyatSection() {
         </p>
 
         {/* Translation */}
-        <p className="text-sm sm:text-base text-[#3F5244] leading-relaxed italic mb-4 font-normal">
+        <p className="text-sm sm:text-base text-sage-700 leading-relaxed italic mb-4 font-normal">
           &ldquo;{quranVerse.translation}&rdquo;
         </p>
 
         {/* Surah Reference */}
-        <p className="text-xs uppercase tracking-widest text-[#99753F] font-semibold">
+        <p className="text-xs uppercase tracking-widest text-gold-600 font-semibold">
           ({quranVerse.surah})
         </p>
       </div>

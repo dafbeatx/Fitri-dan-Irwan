@@ -49,11 +49,11 @@ export function GallerySection() {
       className="py-16 sm:py-20 px-4 sm:px-6 max-w-5xl mx-auto"
     >
       <div className="text-center mb-12">
-        <div className="flex items-center justify-center gap-2 text-xs uppercase tracking-[0.25em] text-[#99753F] font-semibold mb-2">
-          <Camera className="w-4 h-4 text-[#C3A16A]" />
+        <div className="flex items-center justify-center gap-2 text-xs uppercase tracking-[0.25em] text-gold-600 font-semibold mb-2">
+          <Camera className="w-4 h-4 text-gold-400" />
           <span>Momen Bahagia</span>
         </div>
-        <h2 className="font-serif-cormorant text-3xl sm:text-4xl md:text-5xl font-normal text-[#1F2D22]">
+        <h2 className="font-serif-cormorant text-3xl sm:text-4xl md:text-5xl font-normal text-sage-900">
           Galeri Foto
         </h2>
         <p className="mt-3 text-sm text-[#556858] max-w-md mx-auto">
@@ -69,14 +69,14 @@ export function GallerySection() {
             type="button"
             onClick={() => handleOpenModal(index)}
             aria-label={`Lihat foto: ${photo.caption || photo.alt}`}
-            className="group relative aspect-square rounded-2xl overflow-hidden bg-[#FAF8F5] border border-[#EAE2D5] shadow-sm hover:shadow-md transition-all text-left focus-visible:ring-2 focus-visible:ring-[#C3A16A]"
+            className="group relative aspect-square rounded-2xl overflow-hidden bg-ivory-50 border border-ivory-200 shadow-sm hover:shadow-md transition-all text-left focus-visible:ring-2 focus-visible:ring-gold-400"
           >
             {/* Visual Card / Placeholder */}
-            <div className="w-full h-full flex flex-col items-center justify-center p-4 bg-gradient-to-b from-[#FAF8F5] to-[#E6ECE7] text-[#4E6554] group-hover:scale-105 transition-transform duration-300">
-              <div className="w-12 h-12 rounded-full border border-[#C3A16A]/50 bg-white/80 flex items-center justify-center mb-2 shadow-xs">
-                <ImageIcon className="w-5 h-5 text-[#3F5244]" />
+            <div className="w-full h-full flex flex-col items-center justify-center p-4 bg-linear-to-b from-ivory-50 to-sage-100 text-sage-600 group-hover:scale-105 transition-transform duration-300">
+              <div className="w-12 h-12 rounded-full border border-gold-400/50 bg-white/80 flex items-center justify-center mb-2 shadow-xs">
+                <ImageIcon className="w-5 h-5 text-sage-700" />
               </div>
-              <span className="font-serif-cormorant text-base sm:text-lg font-medium text-[#1F2D22] text-center line-clamp-2">
+              <span className="font-serif-cormorant text-base sm:text-lg font-medium text-sage-900 text-center line-clamp-2">
                 {photo.caption || photo.alt}
               </span>
               <span className="text-[11px] text-[#556858] mt-1 uppercase tracking-wider">
@@ -84,7 +84,7 @@ export function GallerySection() {
               </span>
             </div>
 
-            <div className="absolute inset-0 bg-[#3F5244]/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="absolute inset-0 bg-sage-700/10 opacity-0 group-hover:opacity-100 transition-opacity" />
           </button>
         ))}
       </div>
@@ -102,7 +102,7 @@ export function GallerySection() {
             type="button"
             onClick={handleCloseModal}
             aria-label="Tutup tampilan foto"
-            className="absolute top-4 right-4 z-50 p-2.5 rounded-full bg-white/20 hover:bg-white/40 text-white transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center focus-visible:ring-2 focus-visible:ring-white"
+            className="absolute top-4 right-4 z-50 p-2.5 rounded-full bg-white/20 hover:bg-white/40 text-white transition-colors min-h-11 min-w-11 flex items-center justify-center focus-visible:ring-2 focus-visible:ring-white"
           >
             <X className="w-6 h-6" />
           </button>
@@ -112,7 +112,7 @@ export function GallerySection() {
             type="button"
             onClick={handlePrev}
             aria-label="Foto sebelumnya"
-            className="absolute left-3 sm:left-6 z-50 p-2.5 rounded-full bg-white/20 hover:bg-white/40 text-white transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center focus-visible:ring-2 focus-visible:ring-white"
+            className="absolute left-3 sm:left-6 z-50 p-2.5 rounded-full bg-white/20 hover:bg-white/40 text-white transition-colors min-h-11 min-w-11 flex items-center justify-center focus-visible:ring-2 focus-visible:ring-white"
           >
             <ChevronLeft className="w-6 h-6" />
           </button>
@@ -122,18 +122,18 @@ export function GallerySection() {
             type="button"
             onClick={handleNext}
             aria-label="Foto berikutnya"
-            className="absolute right-3 sm:right-6 z-50 p-2.5 rounded-full bg-white/20 hover:bg-white/40 text-white transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center focus-visible:ring-2 focus-visible:ring-white"
+            className="absolute right-3 sm:right-6 z-50 p-2.5 rounded-full bg-white/20 hover:bg-white/40 text-white transition-colors min-h-11 min-w-11 flex items-center justify-center focus-visible:ring-2 focus-visible:ring-white"
           >
             <ChevronRight className="w-6 h-6" />
           </button>
 
           {/* Modal Content */}
           <div className="max-w-2xl w-full bg-white rounded-3xl overflow-hidden shadow-2xl p-6 sm:p-8 text-center flex flex-col items-center">
-            <div className="w-full aspect-[4/3] rounded-2xl bg-[#E6ECE7] border border-[#D0DDD2] flex flex-col items-center justify-center p-6 text-[#3F5244] mb-4">
-              <div className="w-16 h-16 rounded-full border-2 border-[#C3A16A] bg-white flex items-center justify-center mb-3">
-                <Camera className="w-8 h-8 text-[#3F5244]" />
+            <div className="w-full aspect-4/3 rounded-2xl bg-sage-100 border border-sage-200 flex flex-col items-center justify-center p-6 text-sage-700 mb-4">
+              <div className="w-16 h-16 rounded-full border-2 border-gold-400 bg-white flex items-center justify-center mb-3">
+                <Camera className="w-8 h-8 text-sage-700" />
               </div>
-              <h3 className="font-serif-cormorant text-2xl sm:text-3xl font-semibold text-[#1F2D22]">
+              <h3 className="font-serif-cormorant text-2xl sm:text-3xl font-semibold text-sage-900">
                 {gallery[activePhotoIndex].caption}
               </h3>
               <p className="text-xs text-[#556858] mt-2">

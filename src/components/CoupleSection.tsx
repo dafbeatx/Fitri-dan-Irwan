@@ -31,10 +31,10 @@ export function CoupleSection() {
       className="py-16 sm:py-20 px-4 sm:px-6 max-w-5xl mx-auto text-center"
     >
       <div className="mb-12">
-        <span className="text-xs uppercase tracking-[0.25em] text-[#99753F] font-semibold block mb-2">
+        <span className="text-xs uppercase tracking-[0.25em] text-gold-600 font-semibold block mb-2">
           Pasangan Mempelai
         </span>
-        <h2 className="font-serif-cormorant text-3xl sm:text-4xl md:text-5xl font-normal text-[#1F2D22]">
+        <h2 className="font-serif-cormorant text-3xl sm:text-4xl md:text-5xl font-normal text-sage-900">
           Fitri &amp; Irwan
         </h2>
         <p className="mt-4 text-sm sm:text-base text-[#556858] max-w-xl mx-auto leading-relaxed">
@@ -45,23 +45,23 @@ export function CoupleSection() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
         {/* Mempelai Wanita (Fitri) */}
-        <div className="bg-white/90 border border-[#EAE2D5] rounded-3xl p-8 shadow-sm flex flex-col items-center">
+        <div className="bg-white/90 border border-ivory-200 rounded-3xl p-8 shadow-sm flex flex-col items-center">
           {/* Avatar frame */}
           <div className="relative mb-6">
-            <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full border-2 border-[#C3A16A] p-1.5 bg-[#FAF8F5] shadow-inner">
-              <div className="w-full h-full rounded-full bg-[#E6ECE7] flex items-center justify-center text-[#3F5244]">
+            <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full border-2 border-gold-400 p-1.5 bg-ivory-50 shadow-inner">
+              <div className="w-full h-full rounded-full bg-sage-100 flex items-center justify-center text-sage-700">
                 <span className="font-serif-cormorant text-4xl sm:text-5xl font-semibold">F</span>
               </div>
             </div>
-            <div className="absolute -bottom-2 -right-2 p-1.5 rounded-full bg-[#3F5244] text-[#FAF8F5] shadow-md">
-              <Heart className="w-4 h-4 text-[#F3EBD8] fill-current" />
+            <div className="absolute -bottom-2 -right-2 p-1.5 rounded-full bg-sage-700 text-ivory-50 shadow-md">
+              <Heart className="w-4 h-4 text-gold-100 fill-current" />
             </div>
           </div>
 
-          <h3 className="font-serif-cormorant text-2xl sm:text-3xl font-semibold text-[#1F2D22] mb-1">
+          <h3 className="font-serif-cormorant text-2xl sm:text-3xl font-semibold text-sage-900 mb-1">
             {bride.fullName}
           </h3>
-          <p className="text-xs sm:text-sm text-[#99753F] font-medium tracking-wide mb-3">
+          <p className="text-xs sm:text-sm text-gold-600 font-medium tracking-wide mb-3">
             {bride.role}
           </p>
           <p className="text-sm text-[#556858] leading-relaxed max-w-xs mb-4">
@@ -73,7 +73,7 @@ export function CoupleSection() {
             target="_blank"
             rel="noopener noreferrer"
             aria-label={`Kunjungi Instagram ${bride.shortName}`}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium text-[#3F5244] bg-[#F4F6F4] border border-[#D0DDD2] hover:bg-[#E6ECE7] transition-colors focus-visible:ring-2 focus-visible:ring-[#C3A16A] min-h-[44px]"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium text-sage-700 bg-sage-50 border border-sage-200 hover:bg-sage-100 transition-colors focus-visible:ring-2 focus-visible:ring-gold-400 min-h-11"
           >
             <InstagramIcon className="w-3.5 h-3.5" />
             <span>@{bride.instagram}</span>
@@ -81,23 +81,23 @@ export function CoupleSection() {
         </div>
 
         {/* Mempelai Pria (Irwan) */}
-        <div className="bg-white/90 border border-[#EAE2D5] rounded-3xl p-8 shadow-sm flex flex-col items-center">
+        <div className="bg-white/90 border border-ivory-200 rounded-3xl p-8 shadow-sm flex flex-col items-center">
           {/* Avatar frame */}
           <div className="relative mb-6">
-            <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full border-2 border-[#C3A16A] p-1.5 bg-[#FAF8F5] shadow-inner">
-              <div className="w-full h-full rounded-full bg-[#E6ECE7] flex items-center justify-center text-[#3F5244]">
+            <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full border-2 border-gold-400 p-1.5 bg-ivory-50 shadow-inner">
+              <div className="w-full h-full rounded-full bg-sage-100 flex items-center justify-center text-sage-700">
                 <span className="font-serif-cormorant text-4xl sm:text-5xl font-semibold">I</span>
               </div>
             </div>
-            <div className="absolute -bottom-2 -right-2 p-1.5 rounded-full bg-[#3F5244] text-[#FAF8F5] shadow-md">
-              <Heart className="w-4 h-4 text-[#F3EBD8] fill-current" />
+            <div className="absolute -bottom-2 -right-2 p-1.5 rounded-full bg-sage-700 text-ivory-50 shadow-md">
+              <Heart className="w-4 h-4 text-gold-100 fill-current" />
             </div>
           </div>
 
-          <h3 className="font-serif-cormorant text-2xl sm:text-3xl font-semibold text-[#1F2D22] mb-1">
+          <h3 className="font-serif-cormorant text-2xl sm:text-3xl font-semibold text-sage-900 mb-1">
             {groom.fullName}
           </h3>
-          <p className="text-xs sm:text-sm text-[#99753F] font-medium tracking-wide mb-3">
+          <p className="text-xs sm:text-sm text-gold-600 font-medium tracking-wide mb-3">
             {groom.role}
           </p>
           <p className="text-sm text-[#556858] leading-relaxed max-w-xs mb-4">
@@ -109,7 +109,7 @@ export function CoupleSection() {
             target="_blank"
             rel="noopener noreferrer"
             aria-label={`Kunjungi Instagram ${groom.shortName}`}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium text-[#3F5244] bg-[#F4F6F4] border border-[#D0DDD2] hover:bg-[#E6ECE7] transition-colors focus-visible:ring-2 focus-visible:ring-[#C3A16A] min-h-[44px]"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium text-sage-700 bg-sage-50 border border-sage-200 hover:bg-sage-100 transition-colors focus-visible:ring-2 focus-visible:ring-gold-400 min-h-11"
           >
             <InstagramIcon className="w-3.5 h-3.5" />
             <span>@{groom.instagram}</span>

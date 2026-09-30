@@ -3,9 +3,9 @@ import React from "react";
 export function BotanicalDivider({ className = "" }: { className?: string }) {
   return (
     <div className={`flex items-center justify-center gap-3 py-6 ${className}`} aria-hidden="true">
-      <div className="h-px w-16 md:w-24 bg-gradient-to-r from-transparent to-[#C3A16A]" />
+      <div className="h-px w-16 md:w-24 bg-linear-to-r from-transparent to-gold-400" />
       <svg
-        className="w-6 h-6 text-[#4E6554]"
+        className="w-6 h-6 text-sage-600"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -18,7 +18,7 @@ export function BotanicalDivider({ className = "" }: { className?: string }) {
         <path d="M12 11c2-3 6-4 8-2 0 4-3 7-8 7" />
         <path d="M12 15c-1.5-2-4.5-2.5-6-1.5 0 2.5 2 4.5 6 4.5" />
       </svg>
-      <div className="h-px w-16 md:w-24 bg-gradient-to-l from-transparent to-[#C3A16A]" />
+      <div className="h-px w-16 md:w-24 bg-linear-to-l from-transparent to-gold-400" />
     </div>
   );
 }
@@ -62,7 +62,7 @@ export function BismillahCalligraphy({ className = "" }: { className?: string })
   return (
     <div className={`text-center py-2 ${className}`}>
       <span
-        className="font-arabic-verse text-2xl md:text-3xl text-[#3F5244] tracking-wide block"
+        className="font-arabic-verse text-2xl md:text-3xl text-sage-700 tracking-wide block"
         dir="rtl"
         lang="ar"
       >
