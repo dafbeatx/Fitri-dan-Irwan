@@ -33,6 +33,7 @@ import {
   Link2,
   Database,
   Copy,
+  Users,
 } from "lucide-react";
 import { CoverScreen } from "@/components/CoverScreen";
 import {
@@ -694,6 +695,16 @@ export default function AdminCanvaPage() {
             <Monitor className="w-3.5 h-3.5 text-amber-400" />
             <span>Pratinjau Tamu</span>
           </button>
+
+          {/* Manajemen Tamu Link */}
+          <Link
+            href="/manajemen-tamu-undangan"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#272930] hover:bg-[#32353E] border border-amber-500/30 text-xs font-semibold text-amber-300 hover:text-amber-200 transition-all cursor-pointer shadow-xs"
+            title="Buka Manajemen Tamu Undangan & WhatsApp Share"
+          >
+            <Users className="w-3.5 h-3.5 text-amber-400" />
+            <span className="hidden sm:inline">Manajemen Tamu</span>
+          </Link>
 
           {/* Reset Template Button */}
           <button
