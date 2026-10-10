@@ -41,6 +41,15 @@ const amiri = Amiri({
 export const metadata: Metadata = {
   title: "Walimatul 'Ursy: Fitri & Irwan",
   description: "Undangan Pernikahan Digital Fitri & Irwan. Merupakan suatu kehormatan dan kebahagiaan bagi kami atas kehadiran serta doa restu Bapak/Ibu/Saudara/i.",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon-32x32.png", type: "image/png", sizes: "32x32" },
+    ],
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+  },
   openGraph: {
     title: "Walimatul 'Ursy: Fitri & Irwan",
     description: "Undangan Pernikahan Digital Fitri & Irwan",
