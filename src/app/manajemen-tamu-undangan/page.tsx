@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useSyncExternalStore } from "react";
 import Link from "next/link";
 import {
   Users,
@@ -235,10 +235,107 @@ const INITIAL_GUESTS: GuestItem[] = [
 const STORAGE_KEY = "fitri_irwan_guest_list_v2";
 const TEMPLATE_STORAGE_KEY = "fitri_irwan_message_templates_v2";
 
+// External Store: Guests
+let cachedGuests: GuestItem[] | null = null;
+const guestListeners = new Set<() => void>();
+
+function getGuestsSnapshot(): GuestItem[] {
+  if (typeof window === "undefined") return INITIAL_GUESTS;
+  if (!cachedGuests) {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      cachedGuests = saved ? JSON.parse(saved) : INITIAL_GUESTS;
+    } catch {
+      cachedGuests = INITIAL_GUESTS;
+    }
+  }
+  return cachedGuests || INITIAL_GUESTS;
+}
+
+function getGuestsServerSnapshot(): GuestItem[] {
+  return INITIAL_GUESTS;
+}
+
+function subscribeGuests(callback: () => void): () => void {
+  guestListeners.add(callback);
+  return () => guestListeners.delete(callback);
+}
+
+function mutateGuests(updater: (prev: GuestItem[]) => GuestItem[]) {
+  const current = getGuestsSnapshot();
+  const next = updater(current);
+  cachedGuests = next;
+  if (typeof window !== "undefined") {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    } catch {}
+  }
+  guestListeners.forEach((cb) => cb());
+}
+
+// External Store: Message Templates
+let cachedTemplates: Record<GuestCategory, string> | null = null;
+const templateListeners = new Set<() => void>();
+
+function getTemplatesSnapshot(): Record<GuestCategory, string> {
+  if (typeof window === "undefined") return DEFAULT_MESSAGE_TEMPLATES;
+  if (!cachedTemplates) {
+    try {
+      const saved = localStorage.getItem(TEMPLATE_STORAGE_KEY);
+      cachedTemplates = saved ? JSON.parse(saved) : DEFAULT_MESSAGE_TEMPLATES;
+    } catch {
+      cachedTemplates = DEFAULT_MESSAGE_TEMPLATES;
+    }
+  }
+  return cachedTemplates || DEFAULT_MESSAGE_TEMPLATES;
+}
+
+function getTemplatesServerSnapshot(): Record<GuestCategory, string> {
+  return DEFAULT_MESSAGE_TEMPLATES;
+}
+
+function subscribeTemplates(callback: () => void): () => void {
+  templateListeners.add(callback);
+  return () => templateListeners.delete(callback);
+}
+
+function mutateTemplates(
+  updater: (prev: Record<GuestCategory, string>) => Record<GuestCategory, string>
+) {
+  const current = getTemplatesSnapshot();
+  const next = updater(current);
+  cachedTemplates = next;
+  if (typeof window !== "undefined") {
+    try {
+      localStorage.setItem(TEMPLATE_STORAGE_KEY, JSON.stringify(next));
+    } catch {}
+  }
+  templateListeners.forEach((cb) => cb());
+}
+
+// External Store: Base URL
+function getOriginSnapshot(): string {
+  return window.location.origin;
+}
+function getOriginServerSnapshot(): string {
+  return "https://fitri-dan-irwan.vercel.app";
+}
+function subscribeNone(): () => void {
+  return () => {};
+}
+
 export default function ManajemenTamuPage() {
-  const [guests, setGuests] = useState<GuestItem[]>([]);
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [templates, setTemplates] = useState(DEFAULT_MESSAGE_TEMPLATES);
+  const guests = useSyncExternalStore(subscribeGuests, getGuestsSnapshot, getGuestsServerSnapshot);
+  const templates = useSyncExternalStore(
+    subscribeTemplates,
+    getTemplatesSnapshot,
+    getTemplatesServerSnapshot
+  );
+  const baseUrl = useSyncExternalStore(
+    subscribeNone,
+    getOriginSnapshot,
+    getOriginServerSnapshot
+  );
 
   // Filter & Search
   const [activeCategory, setActiveCategory] = useState<"all" | GuestCategory>("all");
@@ -260,40 +357,9 @@ export default function ManajemenTamuPage() {
   const [previewGuest, setPreviewGuest] = useState<GuestItem | null>(null);
   const [editingTemplateCategory, setEditingTemplateCategory] = useState<GuestCategory>("vip");
 
-  // Domain resolver for shareable links
-  const [baseUrl, setBaseUrl] = useState("https://fitri-dan-irwan.vercel.app");
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      setBaseUrl(window.location.origin);
-      try {
-        const savedGuests = localStorage.getItem(STORAGE_KEY);
-        if (savedGuests) {
-          setGuests(JSON.parse(savedGuests));
-        } else {
-          setGuests(INITIAL_GUESTS);
-        }
-
-        const savedTemplates = localStorage.getItem(TEMPLATE_STORAGE_KEY);
-        if (savedTemplates) {
-          setTemplates(JSON.parse(savedTemplates));
-        }
-      } catch (err) {
-        console.error("Gagal memuat data tamu:", err);
-        setGuests(INITIAL_GUESTS);
-      }
-      setIsLoaded(true);
-    }
-  }, []);
-
-  // Save guests to localStorage on change
+  // Save guests helper
   const saveGuests = useCallback((newGuests: GuestItem[]) => {
-    setGuests(newGuests);
-    if (typeof window !== "undefined") {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(newGuests));
-      } catch {}
-    }
+    mutateGuests(() => newGuests);
   }, []);
 
   const showToast = (msg: string) => {
@@ -480,14 +546,6 @@ export default function ManajemenTamuPage() {
     return { total, sent, unsent, progress, byCat };
   }, [guests]);
 
-  if (!isLoaded) {
-    return (
-      <div className="min-h-screen bg-[#0E1015] flex items-center justify-center text-neutral-400">
-        <p className="animate-pulse text-sm">Memuat Manajemen Tamu...</p>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-[#0E1015] text-neutral-200 antialiased selection:bg-amber-500/30 pb-24 sm:pb-16">
       {/* ------------------------------------------------------------------- */}
@@ -634,7 +692,7 @@ export default function ManajemenTamuPage() {
                   value={singleName}
                   onChange={(e) => setSingleName(e.target.value)}
                   placeholder="Contoh: Bpk. Bambang & Istri, Ananda Dimas"
-                  className="w-full px-3 py-2.5 rounded-xl bg-[#101217] border border-[#2D303D] text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-emerald-500 transition-colors"
+                  className="w-full px-3 py-2.5 rounded-xl bg-[#101217] border border-neutral-700/60 text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:border-emerald-500 transition-colors"
                 />
               </div>
 
@@ -679,7 +737,7 @@ export default function ManajemenTamuPage() {
                   value={singlePhone}
                   onChange={(e) => setSinglePhone(e.target.value)}
                   placeholder="08123456789 atau 628..."
-                  className="w-full px-3 py-2 rounded-xl bg-[#101217] border border-[#2D303D] text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-emerald-500 transition-colors"
+                  className="w-full px-3 py-2 rounded-xl bg-[#101217] border border-neutral-700/60 text-xs text-white placeholder:text-neutral-500 focus:outline-none focus:border-emerald-500 transition-colors"
                 />
               </div>
 
@@ -703,7 +761,7 @@ export default function ManajemenTamuPage() {
                   value={bulkText}
                   onChange={(e) => setBulkText(e.target.value)}
                   placeholder={`Bpk. Rahmat & Keluarga\nHj. Siti Maryam\nDimas Prasetyo\nFadhil & Partner\n...`}
-                  className="w-full p-3 rounded-xl bg-[#101217] border border-[#2D303D] text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-emerald-500 font-mono transition-colors"
+                  className="w-full p-3 rounded-xl bg-[#101217] border border-neutral-700/60 text-xs text-white placeholder:text-neutral-500 focus:outline-none focus:border-emerald-500 font-mono transition-colors"
                 />
               </div>
 
@@ -761,7 +819,7 @@ export default function ManajemenTamuPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Cari nama tamu undangan..."
-              className="w-full pl-9 pr-3 py-2 rounded-xl bg-[#161820] border border-[#2B2E3B] text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-amber-500"
+              className="w-full pl-9 pr-3 py-2 rounded-xl bg-[#161820] border border-neutral-700/60 text-xs text-white placeholder:text-neutral-500 focus:outline-none focus:border-amber-500"
             />
             {searchQuery && (
               <button
@@ -1115,16 +1173,12 @@ export default function ManajemenTamuPage() {
                 rows={11}
                 value={templates[editingTemplateCategory]}
                 onChange={(e) => {
-                  const updated = {
-                    ...templates,
+                  mutateTemplates((prev) => ({
+                    ...prev,
                     [editingTemplateCategory]: e.target.value,
-                  };
-                  setTemplates(updated);
-                  if (typeof window !== "undefined") {
-                    localStorage.setItem(TEMPLATE_STORAGE_KEY, JSON.stringify(updated));
-                  }
+                  }));
                 }}
-                className="w-full p-3 rounded-xl bg-[#101217] border border-[#2D303D] text-xs text-white leading-relaxed font-sans focus:outline-none focus:border-amber-500"
+                className="w-full p-3 rounded-xl bg-[#101217] border border-neutral-700/60 text-xs text-white leading-relaxed font-sans focus:outline-none focus:border-amber-500"
               />
             </div>
 
@@ -1133,14 +1187,10 @@ export default function ManajemenTamuPage() {
               <button
                 type="button"
                 onClick={() => {
-                  const updated = {
-                    ...templates,
+                  mutateTemplates((prev) => ({
+                    ...prev,
                     [editingTemplateCategory]: DEFAULT_MESSAGE_TEMPLATES[editingTemplateCategory],
-                  };
-                  setTemplates(updated);
-                  if (typeof window !== "undefined") {
-                    localStorage.setItem(TEMPLATE_STORAGE_KEY, JSON.stringify(updated));
-                  }
+                  }));
                   showToast("Template dikembalikan ke bawaan");
                 }}
                 className="text-xs text-neutral-400 hover:text-white underline cursor-pointer"
