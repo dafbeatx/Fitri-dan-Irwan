@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import { GuestbookEntry, RsvpSubmission } from "@/types/wedding";
+import { GuestbookEntry, RsvpSubmission, GuestItem } from "@/types/wedding";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -161,3 +161,147 @@ function saveLocalRsvp(submission: RsvpSubmission): void {
     console.error("Failed to save RSVP locally:", err);
   }
 }
+
+// ---------------------------------------------------------------------------
+// Wedding Guests CRUD (Database Supabase & Multi-Device Sync)
+// ---------------------------------------------------------------------------
+
+export async function fetchWeddingGuests(): Promise<{
+  data: GuestItem[];
+  error: Error | null;
+  source: "supabase" | "local";
+}> {
+  if (isSupabaseConfigured && supabase) {
+    try {
+      const { data, error } = await supabase
+        .from("wedding_guests")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.warn("Supabase wedding_guests fetch failed:", error.message);
+        return { data: [], error: new Error(error.message), source: "local" };
+      }
+
+      const mapped: GuestItem[] = (data || []).map((row: any) => ({
+        id: row.id,
+        name: row.name,
+        category: row.category,
+        phone: row.phone || "",
+        notes: row.notes || "",
+        isSent: Boolean(row.is_sent),
+        sentAt: row.sent_at || undefined,
+        createdAt: row.created_at || new Date().toISOString(),
+      }));
+
+      return { data: mapped, error: null, source: "supabase" };
+    } catch (err: unknown) {
+      const errorObj = err instanceof Error ? err : new Error(String(err));
+      return { data: [], error: errorObj, source: "local" };
+    }
+  }
+
+  return { data: [], error: null, source: "local" };
+}
+
+export async function upsertWeddingGuest(
+  guest: GuestItem
+): Promise<{ success: boolean; error: Error | null }> {
+  if (isSupabaseConfigured && supabase) {
+    try {
+      const { error } = await supabase.from("wedding_guests").upsert(
+        {
+          id: guest.id,
+          name: guest.name,
+          category: guest.category,
+          phone: guest.phone || "",
+          notes: guest.notes || "",
+          is_sent: guest.isSent,
+          sent_at: guest.sentAt || null,
+          created_at: guest.createdAt,
+        },
+        { onConflict: "id" }
+      );
+
+      if (error) throw error;
+      return { success: true, error: null };
+    } catch (err: unknown) {
+      const errorObj = err instanceof Error ? err : new Error(String(err));
+      return { success: false, error: errorObj };
+    }
+  }
+  return { success: true, error: null };
+}
+
+export async function batchUpsertWeddingGuests(
+  guests: GuestItem[]
+): Promise<{ success: boolean; error: Error | null }> {
+  if (guests.length === 0) return { success: true, error: null };
+  if (isSupabaseConfigured && supabase) {
+    try {
+      const rows = guests.map((guest) => ({
+        id: guest.id,
+        name: guest.name,
+        category: guest.category,
+        phone: guest.phone || "",
+        notes: guest.notes || "",
+        is_sent: guest.isSent,
+        sent_at: guest.sentAt || null,
+        created_at: guest.createdAt,
+      }));
+
+      const { error } = await supabase
+        .from("wedding_guests")
+        .upsert(rows, { onConflict: "id" });
+
+      if (error) throw error;
+      return { success: true, error: null };
+    } catch (err: unknown) {
+      const errorObj = err instanceof Error ? err : new Error(String(err));
+      return { success: false, error: errorObj };
+    }
+  }
+  return { success: true, error: null };
+}
+
+export async function deleteWeddingGuest(
+  id: string
+): Promise<{ success: boolean; error: Error | null }> {
+  if (isSupabaseConfigured && supabase) {
+    try {
+      const { error } = await supabase
+        .from("wedding_guests")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+      return { success: true, error: null };
+    } catch (err: unknown) {
+      const errorObj = err instanceof Error ? err : new Error(String(err));
+      return { success: false, error: errorObj };
+    }
+  }
+  return { success: true, error: null };
+}
+
+export async function clearAllWeddingGuests(): Promise<{
+  success: boolean;
+  error: Error | null;
+}> {
+  if (isSupabaseConfigured && supabase) {
+    try {
+      const { error } = await supabase
+        .from("wedding_guests")
+        .delete()
+        .neq("id", "__none__");
+
+      if (error) throw error;
+      return { success: true, error: null };
+    } catch (err: unknown) {
+      const errorObj = err instanceof Error ? err : new Error(String(err));
+      return { success: false, error: errorObj };
+    }
+  }
+  return { success: true, error: null };
+}
+

@@ -39,3 +39,16 @@ export interface GalleryPhoto {
   width?: number;
   height?: number;
 }
+
+export type GuestCategory = "vip" | "keluarga" | "teman" | "rekan" | "umum";
+
+export interface GuestItem {
+  id: string;
+  name: string;
+  category: GuestCategory;
+  phone?: string;
+  notes?: string;
+  isSent: boolean;
+  sentAt?: string;
+  createdAt: string;
+}

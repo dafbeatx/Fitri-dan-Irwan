@@ -78,6 +78,43 @@ CREATE POLICY "Public config update access"
   USING (true);
 
 
+-- 4. Tabel Manajemen Daftar Tamu Undangan
+CREATE TABLE IF NOT EXISTS wedding_guests (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  category TEXT NOT NULL CHECK (category IN ('vip', 'keluarga', 'teman', 'rekan', 'umum')),
+  phone TEXT DEFAULT '',
+  notes TEXT DEFAULT '',
+  is_sent BOOLEAN DEFAULT false,
+  sent_at TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Index pencarian & sorting tamu undangan
+CREATE INDEX IF NOT EXISTS idx_wedding_guests_created_at ON wedding_guests(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_wedding_guests_category ON wedding_guests(category);
+CREATE INDEX IF NOT EXISTS idx_wedding_guests_is_sent ON wedding_guests(is_sent);
+
+ALTER TABLE wedding_guests ENABLE ROW LEVEL SECURITY;
+
+-- Policy: Akses baca, tambah, ubah status, dan hapus tamu
+CREATE POLICY "Public guests read access"
+  ON wedding_guests FOR SELECT
+  USING (true);
+
+CREATE POLICY "Public guests insert access"
+  ON wedding_guests FOR INSERT
+  WITH CHECK (true);
+
+CREATE POLICY "Public guests update access"
+  ON wedding_guests FOR UPDATE
+  USING (true);
+
+CREATE POLICY "Public guests delete access"
+  ON wedding_guests FOR DELETE
+  USING (true);
+
+
 -- Data Awal Contoh Ucapan Hangat (Optional)
 INSERT INTO wedding_guestbook (name, relationship, attendance, message)
 VALUES 
@@ -85,3 +122,4 @@ VALUES
   ('Dimas & Rina', 'Sahabat', 'hadir', 'Selamat berbahagia sahabatku Irwan dan Fitri! Lancar sampai hari H, semoga menjadi keluarga yang bahagia selamanya.'),
   ('Siti Nurhaliza', 'Teman Kerja', 'hadir', 'Selamat Fitri! Semoga selalu dipenuhi keberkahan dan kebahagiaan dalam membina rumah tangga baru.')
 ON CONFLICT DO NOTHING;
+

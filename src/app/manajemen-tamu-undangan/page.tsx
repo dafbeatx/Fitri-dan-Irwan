@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useCallback, useSyncExternalStore } from "react";
+import React, { useState, useMemo, useCallback, useSyncExternalStore, useEffect } from "react";
 import Link from "next/link";
 import {
   Users,
@@ -18,26 +18,27 @@ import {
   Smile,
   ArrowLeft,
   Download,
-  RotateCcw,
   Plus,
   Eye,
   CheckCircle2,
   Clock,
   X,
+  Database,
+  Cloud,
+  RefreshCw,
+  AlertCircle,
 } from "lucide-react";
+import {
+  fetchWeddingGuests,
+  upsertWeddingGuest,
+  batchUpsertWeddingGuests,
+  deleteWeddingGuest,
+  clearAllWeddingGuests,
+  isSupabaseConfigured,
+} from "@/lib/supabase";
+import { GuestCategory, GuestItem } from "@/types/wedding";
 
-export type GuestCategory = "vip" | "keluarga" | "teman" | "rekan" | "umum";
-
-export interface GuestItem {
-  id: string;
-  name: string;
-  category: GuestCategory;
-  phone?: string;
-  notes?: string;
-  isSent: boolean;
-  sentAt?: string;
-  createdAt: string;
-}
+export type { GuestCategory, GuestItem };
 
 export const CATEGORY_DETAILS: Record<
   GuestCategory,
@@ -196,43 +197,9 @@ Wassalamu’alaikum Warahmatullahi Wabarakatuh.
 Fitri & Irwan`,
 };
 
-const INITIAL_GUESTS: GuestItem[] = [
-  {
-    id: "guest-1",
-    name: "Bpk. Dr. H. Ahmad Fauzi, M.Ag & Keluarga",
-    category: "vip",
-    phone: "",
-    isSent: false,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: "guest-2",
-    name: "Keluarga Besar Bpk. Rahmat",
-    category: "keluarga",
-    phone: "",
-    isSent: true,
-    sentAt: "Hari ini",
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: "guest-3",
-    name: "Dimas Prasetyo & Partner",
-    category: "teman",
-    phone: "",
-    isSent: false,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: "guest-4",
-    name: "Rekan Kantor Tim Aurovia Creative",
-    category: "rekan",
-    phone: "",
-    isSent: false,
-    createdAt: new Date().toISOString(),
-  },
-];
+const INITIAL_GUESTS: GuestItem[] = [];
 
-const STORAGE_KEY = "fitri_irwan_guest_list_v2";
+const STORAGE_KEY = "fitri_irwan_guest_list_v3";
 const TEMPLATE_STORAGE_KEY = "fitri_irwan_message_templates_v2";
 
 // External Store: Guests
@@ -244,9 +211,42 @@ function getGuestsSnapshot(): GuestItem[] {
   if (!cachedGuests) {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
-      cachedGuests = saved ? JSON.parse(saved) : INITIAL_GUESTS;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        cachedGuests = Array.isArray(parsed)
+          ? parsed.filter(
+              (g: GuestItem) =>
+                g.id !== "guest-1" &&
+                g.id !== "guest-2" &&
+                g.id !== "guest-3" &&
+                g.id !== "guest-4"
+            )
+          : [];
+      } else {
+        const v2 = localStorage.getItem("fitri_irwan_guest_list_v2");
+        if (v2) {
+          try {
+            const parsed = JSON.parse(v2);
+            const cleaned = Array.isArray(parsed)
+              ? parsed.filter(
+                  (g: GuestItem) =>
+                    g.id !== "guest-1" &&
+                    g.id !== "guest-2" &&
+                    g.id !== "guest-3" &&
+                    g.id !== "guest-4"
+                )
+              : [];
+            cachedGuests = cleaned;
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(cleaned));
+          } catch {
+            cachedGuests = [];
+          }
+        } else {
+          cachedGuests = [];
+        }
+      }
     } catch {
-      cachedGuests = INITIAL_GUESTS;
+      cachedGuests = [];
     }
   }
   return cachedGuests || INITIAL_GUESTS;
@@ -357,6 +357,11 @@ export default function ManajemenTamuPage() {
   const [previewGuest, setPreviewGuest] = useState<GuestItem | null>(null);
   const [editingTemplateCategory, setEditingTemplateCategory] = useState<GuestCategory>("vip");
 
+  // Database Supabase Sync State & SQL Modal
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [isSqlModalOpen, setIsSqlModalOpen] = useState(false);
+  const [isCopiedSql, setIsCopiedSql] = useState(false);
+
   // Save guests helper
   const saveGuests = useCallback((newGuests: GuestItem[]) => {
     mutateGuests(() => newGuests);
@@ -366,6 +371,55 @@ export default function ManajemenTamuPage() {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 2500);
   };
+
+  // Manual Sync trigger from Header Button
+  const handleManualSync = useCallback(async () => {
+    if (!isSupabaseConfigured || isSyncing) return;
+    setIsSyncing(true);
+    try {
+      const { data, error, source } = await fetchWeddingGuests();
+      if (!error && source === "supabase") {
+        if (data.length > 0) {
+          mutateGuests(() => data);
+          showToast(`✓ ${data.length} data tamu tersinkronisasi`);
+        } else {
+          showToast("Cloud Supabase kosong (0 tamu)");
+        }
+      } else {
+        showToast("Gagal menyinkronkan dengan database");
+      }
+    } catch {
+      showToast("Koneksi Supabase gagal");
+    } finally {
+      setIsSyncing(false);
+    }
+  }, [isSyncing]);
+
+  // Initial cloud sync on mount (async non-blocking without synchronous setState)
+  useEffect(() => {
+    if (!isSupabaseConfigured) return;
+    let isCancelled = false;
+
+    fetchWeddingGuests()
+      .then(({ data, error, source }) => {
+        if (isCancelled) return;
+        if (!error && source === "supabase") {
+          if (data.length > 0) {
+            mutateGuests(() => data);
+          } else {
+            const currentLocal = getGuestsSnapshot();
+            if (currentLocal.length > 0) {
+              batchUpsertWeddingGuests(currentLocal).catch(() => {});
+            }
+          }
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      isCancelled = true;
+    };
+  }, []);
 
   // Generate Guest URL & Message
   const getGuestUrl = useCallback(
@@ -407,6 +461,10 @@ export default function ManajemenTamuPage() {
     setSingleName("");
     setSinglePhone("");
     showToast(`✓ Tamu "${trimmed}" berhasil ditambahkan`);
+
+    if (isSupabaseConfigured) {
+      upsertWeddingGuest(newGuest).catch(() => {});
+    }
   };
 
   const handleAddBulk = () => {
@@ -431,29 +489,41 @@ export default function ManajemenTamuPage() {
     saveGuests([...newGuests, ...guests]);
     setBulkText("");
     showToast(`✓ Berhasil menambahkan ${newGuests.length} tamu sekaligus`);
+
+    if (isSupabaseConfigured) {
+      batchUpsertWeddingGuests(newGuests).catch(() => {});
+    }
   };
 
   const handleDeleteGuest = (id: string, name: string) => {
     if (confirm(`Hapus tamu "${name}" dari daftar?`)) {
       saveGuests(guests.filter((g) => g.id !== id));
       showToast("Tamu dihapus");
+      if (isSupabaseConfigured) {
+        deleteWeddingGuest(id).catch(() => {});
+      }
     }
   };
 
   const handleToggleSent = (id: string) => {
+    let updatedGuest: GuestItem | null = null;
     saveGuests(
       guests.map((g) => {
         if (g.id === id) {
           const nextSent = !g.isSent;
-          return {
+          updatedGuest = {
             ...g,
             isSent: nextSent,
             sentAt: nextSent ? new Date().toLocaleDateString("id-ID") : undefined,
           };
+          return updatedGuest;
         }
         return g;
       })
     );
+    if (isSupabaseConfigured && updatedGuest) {
+      upsertWeddingGuest(updatedGuest).catch(() => {});
+    }
   };
 
   const handleCopyLink = (guest: GuestItem) => {
@@ -489,10 +559,21 @@ export default function ManajemenTamuPage() {
     window.open(waUrl, "_blank");
   };
 
-  const handleResetData = () => {
-    if (confirm("Reset daftar tamu ke contoh awal? Semua tamu yang ditambahkan manual akan terhapus.")) {
-      saveGuests(INITIAL_GUESTS);
-      showToast("Data tamu direset ke awal");
+  const handleClearAllGuests = () => {
+    if (guests.length === 0) {
+      showToast("Daftar tamu sudah kosong.");
+      return;
+    }
+    if (
+      confirm(
+        "Yakin ingin mengosongkan semua data tamu? Semua data di perangkat ini dan di database Cloud Supabase akan terhapus."
+      )
+    ) {
+      saveGuests([]);
+      showToast("✓ Semua data tamu berhasil dikosongkan");
+      if (isSupabaseConfigured) {
+        clearAllWeddingGuests().catch(() => {});
+      }
     }
   };
 
@@ -577,6 +658,28 @@ export default function ManajemenTamuPage() {
           <div className="flex items-center gap-1.5">
             <button
               type="button"
+              onClick={() => setIsSqlModalOpen(true)}
+              className="p-2 rounded-xl bg-[#1E212B] hover:bg-[#282C3A] text-cyan-300 text-xs font-semibold flex items-center gap-1.5 border border-cyan-500/20 active:scale-95 transition-all cursor-pointer"
+              title="Skema Database Supabase & Kode SQL"
+            >
+              <Database className="w-4 h-4 text-cyan-400" />
+              <span className="hidden sm:inline text-xs">SQL Supabase</span>
+            </button>
+
+            {isSupabaseConfigured && (
+              <button
+                type="button"
+                onClick={handleManualSync}
+                disabled={isSyncing}
+                className="p-2 rounded-xl bg-[#1E212B] hover:bg-[#282C3A] text-emerald-300 text-xs font-semibold flex items-center gap-1 border border-emerald-500/20 active:scale-95 transition-all cursor-pointer disabled:opacity-50"
+                title="Sinkronisasi Ulang Database Cloud Supabase"
+              >
+                <RefreshCw className={`w-4 h-4 ${isSyncing ? "animate-spin text-emerald-400" : ""}`} />
+              </button>
+            )}
+
+            <button
+              type="button"
               onClick={() => setIsTemplateModalOpen(true)}
               className="p-2 rounded-xl bg-[#1E212B] hover:bg-[#282C3A] text-amber-300 text-xs font-semibold flex items-center gap-1.5 border border-amber-500/20 active:scale-95 transition-all cursor-pointer"
               title="Kustomisasi Template Pesan WhatsApp"
@@ -605,9 +708,22 @@ export default function ManajemenTamuPage() {
         <div className="bg-linear-to-br from-[#181A22] to-[#12141A] border border-[#2B2F3D] rounded-2xl p-4 shadow-xl">
           <div className="flex items-center justify-between mb-3">
             <div>
-              <span className="text-[10px] uppercase font-bold tracking-wider text-amber-400">
-                Progress Pengiriman Undangan
-              </span>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-[10px] uppercase font-bold tracking-wider text-amber-400">
+                  Progress Pengiriman
+                </span>
+                {isSupabaseConfigured ? (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-[9px] text-emerald-400 font-semibold">
+                    <Cloud className="w-2.5 h-2.5" />
+                    <span>Cloud Supabase</span>
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-[9px] text-amber-300 font-semibold">
+                    <Database className="w-2.5 h-2.5" />
+                    <span>Lokal Offline</span>
+                  </span>
+                )}
+              </div>
               <h2 className="text-xl font-bold text-white flex items-baseline gap-2">
                 <span>{stats.sent}</span>
                 <span className="text-xs font-normal text-neutral-400">
@@ -1038,19 +1154,31 @@ export default function ManajemenTamuPage() {
           )}
         </div>
 
-        {/* BOTTOM RESET HELPER */}
-        <div className="pt-4 flex items-center justify-between text-xs text-neutral-500">
+        {/* BOTTOM HELPER */}
+        <div className="pt-4 flex flex-wrap items-center justify-between gap-3 text-xs text-neutral-500">
           <button
             type="button"
-            onClick={handleResetData}
-            className="hover:text-neutral-300 flex items-center gap-1 cursor-pointer"
+            onClick={handleClearAllGuests}
+            className="hover:text-rose-400 text-neutral-400 flex items-center gap-1.5 cursor-pointer transition-colors"
           >
-            <RotateCcw className="w-3.5 h-3.5" />
-            <span>Reset Data Contoh</span>
+            <Trash2 className="w-3.5 h-3.5 text-rose-500/80" />
+            <span>Kosongkan Semua Data</span>
           </button>
-          <Link href="/admin" className="text-amber-400 hover:underline">
-            Buka Canva Studio &rarr;
-          </Link>
+
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setIsSqlModalOpen(true)}
+              className="text-cyan-400 hover:text-cyan-300 flex items-center gap-1 cursor-pointer transition-colors"
+            >
+              <Database className="w-3.5 h-3.5" />
+              <span>Lihat SQL Supabase</span>
+            </button>
+            <span className="text-neutral-700">•</span>
+            <Link href="/admin" className="text-amber-400 hover:underline">
+              Buka Canva Studio &rarr;
+            </Link>
+          </div>
         </div>
       </main>
 
@@ -1207,6 +1335,163 @@ export default function ManajemenTamuPage() {
                 className="py-2 px-5 rounded-xl bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold text-xs shadow-md transition-all cursor-pointer"
               >
                 Selesai &amp; Simpan
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ------------------------------------------------------------------- */}
+      {/* MODAL 3: SQL SCHEMA SUPABASE & TUTORIAL RUN QUERY */}
+      {/* ------------------------------------------------------------------- */}
+      {isSqlModalOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-xs p-4"
+        >
+          <div className="bg-[#181A22] border border-[#2D313F] rounded-2xl max-w-lg w-full p-5 text-neutral-200 shadow-2xl relative max-h-[90vh] flex flex-col">
+            <div className="flex items-start justify-between gap-3 mb-2 shrink-0">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">
+                  <Database className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-base text-white">SQL Schema Supabase</h3>
+                  <p className="text-xs text-neutral-400">
+                    Tabel <code className="text-amber-300 font-mono">wedding_guests</code> agar data tersimpan permanen
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsSqlModalOpen(false)}
+                className="p-1.5 rounded-lg text-neutral-400 hover:text-white bg-[#222530]"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="my-2 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-200/90 leading-relaxed shrink-0">
+              <p className="font-semibold text-amber-300 mb-1 flex items-center gap-1.5">
+                <AlertCircle className="w-3.5 h-3.5 text-amber-400" />
+                Langkah Eksekusi di Supabase:
+              </p>
+              <ol className="list-decimal list-inside space-y-0.5 text-[11px] text-neutral-300">
+                <li>Buka dashboard Supabase project Anda</li>
+                <li>Klik menu <strong>SQL Editor</strong> di panel sebelah kiri</li>
+                <li>Klik <strong>New query</strong>, lalu klik tombol Salin SQL di bawah dan paste</li>
+                <li>Klik tombol hijau <strong>Run</strong></li>
+              </ol>
+            </div>
+
+            {/* Code Block */}
+            <div className="relative flex-1 overflow-hidden rounded-xl border border-[#2B2F3D] bg-[#0E1015] my-2">
+              <div className="flex items-center justify-between px-3 py-1.5 bg-[#151720] border-b border-[#252834] text-[11px] text-neutral-400">
+                <span className="font-mono text-cyan-400">schema.sql &rarr; wedding_guests</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(`-- 4. Tabel Manajemen Daftar Tamu Undangan
+CREATE TABLE IF NOT EXISTS wedding_guests (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  category TEXT NOT NULL CHECK (category IN ('vip', 'keluarga', 'teman', 'rekan', 'umum')),
+  phone TEXT DEFAULT '',
+  notes TEXT DEFAULT '',
+  is_sent BOOLEAN DEFAULT false,
+  sent_at TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Index pencarian & sorting tamu undangan
+CREATE INDEX IF NOT EXISTS idx_wedding_guests_created_at ON wedding_guests(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_wedding_guests_category ON wedding_guests(category);
+CREATE INDEX IF NOT EXISTS idx_wedding_guests_is_sent ON wedding_guests(is_sent);
+
+ALTER TABLE wedding_guests ENABLE ROW LEVEL SECURITY;
+
+-- Policy: Akses publik untuk membaca dan mengelola tamu
+CREATE POLICY "Public guests read access"
+  ON wedding_guests FOR SELECT
+  USING (true);
+
+CREATE POLICY "Public guests insert access"
+  ON wedding_guests FOR INSERT
+  WITH CHECK (true);
+
+CREATE POLICY "Public guests update access"
+  ON wedding_guests FOR UPDATE
+  USING (true);
+
+CREATE POLICY "Public guests delete access"
+  ON wedding_guests FOR DELETE
+  USING (true);`);
+                    setIsCopiedSql(true);
+                    showToast("✓ Kode SQL berhasil disalin ke clipboard!");
+                    setTimeout(() => setIsCopiedSql(false), 2500);
+                  }}
+                  className="px-2.5 py-1 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-xs flex items-center gap-1 active:scale-95 transition-all cursor-pointer"
+                >
+                  {isCopiedSql ? (
+                    <>
+                      <Check className="w-3.5 h-3.5" />
+                      <span>Tersalin!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3.5 h-3.5" />
+                      <span>Salin SQL</span>
+                    </>
+                  )}
+                </button>
+              </div>
+              <pre className="p-3 text-[11px] font-mono text-neutral-300 overflow-auto max-h-52 leading-relaxed select-all">
+{`-- 4. Tabel Manajemen Daftar Tamu Undangan
+CREATE TABLE IF NOT EXISTS wedding_guests (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  category TEXT NOT NULL CHECK (category IN ('vip', 'keluarga', 'teman', 'rekan', 'umum')),
+  phone TEXT DEFAULT '',
+  notes TEXT DEFAULT '',
+  is_sent BOOLEAN DEFAULT false,
+  sent_at TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Index pencarian & sorting tamu undangan
+CREATE INDEX IF NOT EXISTS idx_wedding_guests_created_at ON wedding_guests(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_wedding_guests_category ON wedding_guests(category);
+CREATE INDEX IF NOT EXISTS idx_wedding_guests_is_sent ON wedding_guests(is_sent);
+
+ALTER TABLE wedding_guests ENABLE ROW LEVEL SECURITY;
+
+-- Policy: Akses publik untuk membaca dan mengelola tamu
+CREATE POLICY "Public guests read access"
+  ON wedding_guests FOR SELECT
+  USING (true);
+
+CREATE POLICY "Public guests insert access"
+  ON wedding_guests FOR INSERT
+  WITH CHECK (true);
+
+CREATE POLICY "Public guests update access"
+  ON wedding_guests FOR UPDATE
+  USING (true);
+
+CREATE POLICY "Public guests delete access"
+  ON wedding_guests FOR DELETE
+  USING (true);`}
+              </pre>
+            </div>
+
+            <div className="pt-2 flex items-center justify-end shrink-0">
+              <button
+                type="button"
+                onClick={() => setIsSqlModalOpen(false)}
+                className="py-2 px-5 rounded-xl bg-neutral-700 hover:bg-neutral-600 text-white text-xs font-semibold cursor-pointer"
+              >
+                Tutup
               </button>
             </div>
           </div>
