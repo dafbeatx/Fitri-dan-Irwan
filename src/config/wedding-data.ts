@@ -133,7 +133,15 @@ export const weddingData = {
       title: "QRIS Tanda Kasih",
       description: "Dapat dipindai melalui aplikasi m-Banking atau e-Wallet apapun",
     },
-    confirmationPhone: "",
+    confirmationPhone: "62881024136818",
+    confirmationHolder: "Fitri Ani Rahayu, S.Mat",
+    confirmationDisplay: "+62 881-0241-36818",
+  },
+
+  rsvpContact: {
+    name: "Fitri Ani Rahayu, S.Mat",
+    phoneDisplay: "+62 881-0241-36818",
+    waNumber: "62881024136818",
   },
 
   audio: {

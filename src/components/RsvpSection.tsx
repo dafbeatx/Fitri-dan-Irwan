@@ -6,6 +6,7 @@ import { AttendanceStatus } from "@/types/wedding";
 import { CheckCircle2, AlertCircle, Loader2, Send, MessageCircle } from "lucide-react";
 import confetti from "canvas-confetti";
 import { BotanicalDivider, BotanicalFlourishCrest, FloralCardCorner } from "./BotanicalDecor";
+import { weddingData } from "@/config/wedding-data";
 
 interface RsvpSectionProps {
   initialGuestName?: string;
@@ -73,7 +74,8 @@ export function RsvpSection({ initialGuestName = "", onSuccess }: RsvpSectionPro
       `*Kehadiran:* ${encodeURIComponent(statusText)}%0A` +
       `*Jumlah Tamu:* ${encodeURIComponent(attendance === "hadir" ? `${guestsCount} Orang` : "-")}%0A` +
       `*Pesan / Doa:* ${encodeURIComponent(message.trim() || "-")}`;
-    const waUrl = `https://wa.me/?text=${text}`;
+    const targetPhone = weddingData.rsvpContact?.waNumber || weddingData.gifts.confirmationPhone;
+    const waUrl = `https://wa.me/${targetPhone}?text=${text}`;
     window.open(waUrl, "_blank", "noopener,noreferrer");
   };
 
@@ -127,6 +129,22 @@ export function RsvpSection({ initialGuestName = "", onSuccess }: RsvpSectionPro
               >
                 Kirim Konfirmasi Baru
               </button>
+            </div>
+            {/* Info Kontak Konfirmasi Kehadiran */}
+            <div className="mt-5 pt-3.5 border-t border-gold-200/50 text-center">
+              <p className="text-[11px] text-sage-600">
+                Penerima Konfirmasi:{" "}
+                <span className="font-semibold text-sage-900">{weddingData.rsvpContact.name}</span>
+              </p>
+              <a
+                href={`https://wa.me/${weddingData.rsvpContact.waNumber}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-xs text-emerald-700 hover:text-emerald-800 font-mono font-medium mt-1 hover:underline"
+              >
+                <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
+                <span>{weddingData.rsvpContact.phoneDisplay}</span>
+              </a>
             </div>
           </div>
         ) : (
@@ -262,8 +280,27 @@ export function RsvpSection({ initialGuestName = "", onSuccess }: RsvpSectionPro
                 className="w-full flex items-center justify-center gap-2 py-3 px-6 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-300 font-medium text-xs hover:bg-emerald-100 active:scale-[0.98] transition-all min-h-11 focus-visible:ring-2 focus-visible:ring-emerald-400"
               >
                 <MessageCircle className="w-4 h-4 text-emerald-600" />
-                <span>Siapkan Draf Pesan WhatsApp</span>
+                <span>Kirim Konfirmasi via WhatsApp</span>
               </button>
+            </div>
+
+            {/* Kontak Konfirmasi Kehadiran */}
+            <div className="pt-3.5 border-t border-gold-200/50 text-center">
+              <p className="text-[11px] text-sage-600">
+                Kontak Konfirmasi Kehadiran:
+              </p>
+              <p className="text-xs font-semibold text-sage-900 mt-0.5">
+                {weddingData.rsvpContact.name}
+              </p>
+              <a
+                href={`https://wa.me/${weddingData.rsvpContact.waNumber}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-xs text-emerald-700 hover:text-emerald-800 font-mono font-medium mt-1 hover:underline"
+              >
+                <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
+                <span>{weddingData.rsvpContact.phoneDisplay}</span>
+              </a>
             </div>
           </form>
         )}
