@@ -1,4 +1,6 @@
-import { useSyncExternalStore } from "react";
+"use client";
+
+import { useSyncExternalStore, useEffect } from "react";
 import {
   FloralCornerStyle,
   FloralCornerPosition,
@@ -317,6 +319,39 @@ export function loadCoverConfig(): CoverConfig {
   }
 }
 
+let isCloudSyncing = false;
+let hasSyncedOnce = false;
+
+export async function syncCoverConfigFromCloud(): Promise<CoverConfig> {
+  if (typeof window === "undefined" || isCloudSyncing) return cachedConfig;
+  isCloudSyncing = true;
+  try {
+    const res = await fetch("/api/cover-config", { cache: "no-store" });
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.config) {
+        const merged: CoverConfig = {
+          ...DEFAULT_COVER_CONFIG,
+          ...data.config,
+        };
+        cachedConfig = merged;
+        isStoreInitialized = true;
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+        } catch {}
+        listeners.forEach((l) => l());
+        return merged;
+      }
+    }
+  } catch (err) {
+    console.warn("Gagal menyinkronkan cover config dari cloud:", err);
+  } finally {
+    isCloudSyncing = false;
+    hasSyncedOnce = true;
+  }
+  return cachedConfig;
+}
+
 export function saveCoverConfig(cfg: CoverConfig): void {
   if (typeof window === "undefined") return;
   try {
@@ -326,6 +361,46 @@ export function saveCoverConfig(cfg: CoverConfig): void {
     listeners.forEach((l) => l());
   } catch (err) {
     console.error("Gagal menyimpan cover config:", err);
+  }
+}
+
+export async function saveCoverConfigCloud(cfg: CoverConfig): Promise<{
+  success: boolean;
+  savedToSupabase: boolean;
+  error?: string | null;
+}> {
+  // 1. Simpan di cache lokal terlebih dahulu untuk responsivitas seketika
+  saveCoverConfig(cfg);
+
+  // 2. Simpan ke database cloud Supabase agar otomatis aktif di HP & semua perangkat
+  try {
+    const res = await fetch("/api/cover-config", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(cfg),
+    });
+
+    if (res.ok) {
+      const result = await res.json();
+      return {
+        success: Boolean(result.success),
+        savedToSupabase: Boolean(result.savedToSupabase),
+        error: result.supabaseError || null,
+      };
+    } else {
+      const errJson = await res.json().catch(() => ({}));
+      return {
+        success: false,
+        savedToSupabase: false,
+        error: errJson.error || `Server HTTP ${res.status}`,
+      };
+    }
+  } catch (err) {
+    return {
+      success: false,
+      savedToSupabase: false,
+      error: err instanceof Error ? err.message : "Koneksi cloud gagal",
+    };
   }
 }
 
@@ -356,6 +431,15 @@ function getSnapshot(): CoverConfig {
 }
 
 export function useCoverConfig(): CoverConfig {
-  return useSyncExternalStore(subscribe, getSnapshot, () => DEFAULT_COVER_CONFIG);
+  const config = useSyncExternalStore(subscribe, getSnapshot, () => DEFAULT_COVER_CONFIG);
+
+  useEffect(() => {
+    // Sinkronisasi otomatis dari cloud saat halaman pertama kali dibuka di HP / browser
+    if (!hasSyncedOnce) {
+      syncCoverConfigFromCloud();
+    }
+  }, []);
+
+  return config;
 }
 

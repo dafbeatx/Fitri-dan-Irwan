@@ -53,6 +53,31 @@ CREATE POLICY "Public rsvp read access"
   ON wedding_rsvp FOR SELECT
   USING (true);
 
+
+-- 3. Tabel Konfigurasi Desain Undangan (Cover, Tipografi, Ornamen Canva Multi-Device)
+CREATE TABLE IF NOT EXISTS wedding_config (
+  id TEXT PRIMARY KEY,
+  data JSONB NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE wedding_config ENABLE ROW LEVEL SECURITY;
+
+-- Policy: Publik / HP Tamu dapat membaca konfigurasi desain cover
+CREATE POLICY "Public config read access"
+  ON wedding_config FOR SELECT
+  USING (true);
+
+-- Policy: Admin dapat menyimpan dan memperbarui konfigurasi desain cover
+CREATE POLICY "Public config insert access"
+  ON wedding_config FOR INSERT
+  WITH CHECK (true);
+
+CREATE POLICY "Public config update access"
+  ON wedding_config FOR UPDATE
+  USING (true);
+
+
 -- Data Awal Contoh Ucapan Hangat (Optional)
 INSERT INTO wedding_guestbook (name, relationship, attendance, message)
 VALUES 

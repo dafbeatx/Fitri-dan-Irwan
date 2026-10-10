@@ -31,6 +31,8 @@ import {
   Monitor,
   CheckCircle2,
   Link2,
+  Database,
+  Copy,
 } from "lucide-react";
 import { CoverScreen } from "@/components/CoverScreen";
 import {
@@ -38,6 +40,7 @@ import {
   CANVA_TEMPLATES,
   useCoverConfig,
   saveCoverConfig,
+  saveCoverConfigCloud,
   resetCoverConfig,
   CanvasElementTransform,
   ThemeTemplate,
@@ -228,6 +231,10 @@ export default function AdminCanvaPage() {
   }, [persistedConfig]);
 
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
+  const [cloudSyncMessage, setCloudSyncMessage] = useState<string | null>(null);
+  const [isCloudSaved, setIsCloudSaved] = useState<boolean>(false);
+  const [showSqlHelpModal, setShowSqlHelpModal] = useState<boolean>(false);
+  const [copiedSql, setCopiedSql] = useState<boolean>(false);
 
   // Auto-save draft to localStorage with a 600ms debounce
   useEffect(() => {
@@ -425,14 +432,36 @@ export default function AdminCanvaPage() {
     reader.readAsDataURL(file);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setSaveStatus("saving");
-    saveCoverConfig(config);
+    setCloudSyncMessage("Menyinkronkan ke Cloud Supabase...");
+
+    const res = await saveCoverConfigCloud(config);
     setConfigDraft(null);
-    setTimeout(() => {
-      setSaveStatus("saved");
+    setSaveStatus("saved");
+
+    if (res.savedToSupabase) {
+      setIsCloudSaved(true);
+      setCloudSyncMessage("Tersimpan ke Cloud Supabase (Otomatis tampil di HP & semua perangkat)!");
+      setTimeout(() => {
+        setSaveStatus("idle");
+        setTimeout(() => setCloudSyncMessage(null), 3500);
+      }, 2500);
+    } else {
+      setIsCloudSaved(false);
+      if (
+        res.error &&
+        (res.error.includes("wedding_config") ||
+          res.error.includes("schema cache") ||
+          res.error.includes("relation"))
+      ) {
+        setCloudSyncMessage("Tersimpan di cache lokal. Perlu aktivasi tabel cloud Supabase.");
+        setShowSqlHelpModal(true);
+      } else {
+        setCloudSyncMessage(res.error ? `Tersimpan lokal (${res.error})` : "Tersimpan di perangkat lokal");
+      }
       setTimeout(() => setSaveStatus("idle"), 2500);
-    }, 300);
+    }
   };
 
   const handleReset = () => {
@@ -557,8 +586,26 @@ export default function AdminCanvaPage() {
               </span>
             </div>
             <div className="flex items-center gap-1.5 text-[11px] text-neutral-400">
-              <span className={`w-1.5 h-1.5 rounded-full ${configDraft ? "bg-amber-400" : "bg-emerald-400"} animate-pulse`} />
-              <span>{configDraft ? "Menyimpan perubahan..." : saveStatus === "saved" ? "Tersimpan!" : "Tersimpan otomatis"}</span>
+              <span
+                className={`w-1.5 h-1.5 rounded-full ${
+                  configDraft
+                    ? "bg-amber-400"
+                    : isCloudSaved
+                    ? "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]"
+                    : "bg-emerald-400"
+                } animate-pulse`}
+              />
+              <span className="truncate max-w-50" title={cloudSyncMessage || ""}>
+                {cloudSyncMessage
+                  ? cloudSyncMessage
+                  : configDraft
+                  ? "Menyimpan perubahan..."
+                  : saveStatus === "saved"
+                  ? isCloudSaved
+                    ? "Cloud tersinkron!"
+                    : "Tersimpan!"
+                  : "Tersimpan otomatis"}
+              </span>
             </div>
           </div>
         </div>
@@ -661,17 +708,22 @@ export default function AdminCanvaPage() {
           <button
             type="button"
             onClick={handleSave}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-md active:scale-95 transition-all cursor-pointer"
+            title={cloudSyncMessage || "Simpan desain ke Cloud Supabase agar tampil sama di HP"}
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-white text-xs font-semibold shadow-md active:scale-95 transition-all cursor-pointer ${
+              isCloudSaved
+                ? "bg-emerald-700 hover:bg-emerald-600"
+                : "bg-emerald-600 hover:bg-emerald-500"
+            }`}
           >
             {saveStatus === "saved" ? (
               <>
                 <Check className="w-3.5 h-3.5 text-white" />
-                <span>Tersimpan!</span>
+                <span>{isCloudSaved ? "Cloud Tersinkron!" : "Tersimpan!"}</span>
               </>
             ) : (
               <>
                 <Save className="w-3.5 h-3.5" />
-                <span>{saveStatus === "saving" ? "Menyimpan..." : "Simpan"}</span>
+                <span>{saveStatus === "saving" ? "Menyimpan..." : "Simpan Desain"}</span>
               </>
             )}
           </button>
@@ -2293,6 +2345,104 @@ export default function AdminCanvaPage() {
           <p className="text-[11px] text-neutral-400 mt-2">
             Klik &apos;Buka Undangan&apos; di dalam sampul untuk menguji alur animasi pembuka dan backsound musik.
           </p>
+        </div>
+      )}
+
+      {/* Modal Bantuan Aktivasi Cloud Supabase (Multi-Device Sync) */}
+      {showSqlHelpModal && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-xs p-4"
+        >
+          <div className="bg-[#1C1E24] border border-amber-500/40 rounded-2xl max-w-lg w-full p-6 text-neutral-200 shadow-2xl relative">
+            <div className="flex items-start justify-between gap-3 mb-4">
+              <div className="flex items-center gap-2.5">
+                <span className="p-2.5 rounded-xl bg-amber-500/20 text-amber-400">
+                  <Database className="w-5 h-5" />
+                </span>
+                <div>
+                  <h3 className="font-semibold text-white text-base">
+                    Aktifkan Sinkronisasi Cloud ke HP
+                  </h3>
+                  <p className="text-xs text-neutral-400">
+                    Satu langkah mudah di Supabase SQL Editor
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowSqlHelpModal(false)}
+                className="p-1.5 rounded-lg text-neutral-400 hover:text-white hover:bg-[#282A32] cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <p className="text-xs text-neutral-300 mb-3 leading-relaxed">
+              Agar editan admin <strong>otomatis tampil sama di HP pengunjung &amp; semua perangkat lain</strong> (bukan hanya tersimpan di cache laptop admin), buat tabel <code className="text-amber-400 font-mono">wedding_config</code> di Supabase Anda:
+            </p>
+
+            <div className="relative bg-[#121316] border border-[#2D2F38] rounded-xl p-3 font-mono text-[11px] text-amber-200/90 overflow-x-auto max-h-48 mb-4">
+              <pre>{`CREATE TABLE IF NOT EXISTS wedding_config (
+  id TEXT PRIMARY KEY,
+  data JSONB NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE wedding_config ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Public config read access" ON wedding_config FOR SELECT USING (true);
+CREATE POLICY "Public config insert access" ON wedding_config FOR INSERT WITH CHECK (true);
+CREATE POLICY "Public config update access" ON wedding_config FOR UPDATE USING (true);`}</pre>
+            </div>
+
+            <div className="flex items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText(`CREATE TABLE IF NOT EXISTS wedding_config (
+  id TEXT PRIMARY KEY,
+  data JSONB NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE wedding_config ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Public config read access" ON wedding_config FOR SELECT USING (true);
+CREATE POLICY "Public config insert access" ON wedding_config FOR INSERT WITH CHECK (true);
+CREATE POLICY "Public config update access" ON wedding_config FOR UPDATE USING (true);`);
+                  setCopiedSql(true);
+                  setTimeout(() => setCopiedSql(false), 2500);
+                }}
+                className="flex-1 py-2.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer"
+              >
+                {copiedSql ? (
+                  <>
+                    <Check className="w-4 h-4 text-emerald-950" />
+                    <span>SQL Berhasil Disalin!</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-4 h-4" />
+                    <span>Salin Kode SQL</span>
+                  </>
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowSqlHelpModal(false)}
+                className="py-2.5 px-4 rounded-xl bg-[#282A32] hover:bg-[#343742] text-neutral-300 text-xs font-semibold cursor-pointer"
+              >
+                Tutup
+              </button>
+            </div>
+
+            <p className="text-[10px] text-neutral-500 mt-3 text-center">
+              Buka dashboard Supabase -&gt; <strong>SQL Editor</strong> -&gt; Paste &amp; Run. Setelah itu klik tombol Simpan kembali di Canva studio ini.
+            </p>
+          </div>
         </div>
       )}
     </div>
