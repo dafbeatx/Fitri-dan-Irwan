@@ -692,7 +692,7 @@ export default function ManajemenTamuPage() {
                   value={singleName}
                   onChange={(e) => setSingleName(e.target.value)}
                   placeholder="Contoh: Bpk. Bambang & Istri, Ananda Dimas"
-                  className="w-full px-3 py-2.5 rounded-xl bg-[#101217] border border-neutral-700/60 text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:border-emerald-500 transition-colors"
+                  className="input-dark-tamu px-3 py-2.5 text-sm"
                 />
               </div>
 
@@ -737,7 +737,7 @@ export default function ManajemenTamuPage() {
                   value={singlePhone}
                   onChange={(e) => setSinglePhone(e.target.value)}
                   placeholder="08123456789 atau 628..."
-                  className="w-full px-3 py-2 rounded-xl bg-[#101217] border border-neutral-700/60 text-xs text-white placeholder:text-neutral-500 focus:outline-none focus:border-emerald-500 transition-colors"
+                  className="input-dark-tamu px-3 py-2 text-xs"
                 />
               </div>
 
@@ -761,7 +761,7 @@ export default function ManajemenTamuPage() {
                   value={bulkText}
                   onChange={(e) => setBulkText(e.target.value)}
                   placeholder={`Bpk. Rahmat & Keluarga\nHj. Siti Maryam\nDimas Prasetyo\nFadhil & Partner\n...`}
-                  className="w-full p-3 rounded-xl bg-[#101217] border border-neutral-700/60 text-xs text-white placeholder:text-neutral-500 focus:outline-none focus:border-emerald-500 font-mono transition-colors"
+                  className="input-dark-tamu p-3 text-xs font-mono"
                 />
               </div>
 
@@ -819,7 +819,7 @@ export default function ManajemenTamuPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Cari nama tamu undangan..."
-              className="w-full pl-9 pr-3 py-2 rounded-xl bg-[#161820] border border-neutral-700/60 text-xs text-white placeholder:text-neutral-500 focus:outline-none focus:border-amber-500"
+              className="input-dark-amber pl-9 pr-3 py-2 text-xs"
             />
             {searchQuery && (
               <button
@@ -1178,7 +1178,7 @@ export default function ManajemenTamuPage() {
                     [editingTemplateCategory]: e.target.value,
                   }));
                 }}
-                className="w-full p-3 rounded-xl bg-[#101217] border border-neutral-700/60 text-xs text-white leading-relaxed font-sans focus:outline-none focus:border-amber-500"
+                className="input-dark-amber p-3 text-xs leading-relaxed font-sans"
               />
             </div>
 

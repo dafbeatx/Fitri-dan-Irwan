@@ -246,6 +246,43 @@
   outline-offset: 2px;
 }
 
+/* Guest Management Dark Input Helpers */
+.input-dark-tamu {
+  width: 100%;
+  border-radius: 0.75rem;
+  background-color: #101217;
+  border: 1px solid rgba(82, 82, 82, 0.6);
+  color: #ffffff;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.input-dark-tamu::placeholder {
+  color: #737373;
+}
+
+.input-dark-tamu:focus {
+  outline: none;
+  border-color: #10b981;
+}
+
+.input-dark-amber {
+  width: 100%;
+  border-radius: 0.75rem;
+  background-color: #161820;
+  border: 1px solid rgba(82, 82, 82, 0.6);
+  color: #ffffff;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.input-dark-amber::placeholder {
+  color: #737373;
+}
+
+.input-dark-amber:focus {
+  outline: none;
+  border-color: #f59e0b;
+}
+
 /* Accessible focus ring - R-32 */
 *:focus-visible {
   outline: 2px solid #c3a16a;
