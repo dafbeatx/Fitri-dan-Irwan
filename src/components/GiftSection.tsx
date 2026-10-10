@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import { weddingData } from "@/config/wedding-data";
 import { Gift, Copy, Check, QrCode, MessageCircle, X } from "lucide-react";
-import { BotanicalDivider } from "./BotanicalDecor";
+import { BotanicalDivider, BotanicalFlourishCrest, FloralCardCorner } from "./BotanicalDecor";
 
 export function GiftSection() {
   const { gifts } = weddingData;
@@ -26,70 +27,104 @@ export function GiftSection() {
     <section
       id="hadiah"
       aria-label="Tanda Kasih dan Amplop Digital"
-      className="py-16 sm:py-20 px-4 sm:px-6 max-w-3xl mx-auto text-center"
+      className="py-12 sm:py-16 px-4 max-w-sm mx-auto text-center"
     >
-      <div className="mb-10">
-        <div className="flex items-center justify-center gap-2 text-xs uppercase tracking-[0.25em] text-gold-600 font-semibold mb-2">
-          <Gift className="w-4 h-4 text-gold-400" />
+      <div className="mb-8">
+        <div className="flex items-center justify-center gap-2 text-[10px] uppercase tracking-[0.35em] text-gold-600 font-semibold mb-2.5">
+          <Gift className="w-4 h-4 text-gold-500" />
           <span>Tanda Kasih</span>
         </div>
-        <h2 className="font-serif-cormorant text-3xl sm:text-4xl md:text-5xl font-normal text-sage-900">
+        <h2 className="font-serif-cormorant text-3xl sm:text-4xl font-normal text-sage-900 tracking-wide">
           Amplop Digital
         </h2>
-        <p className="mt-3 text-sm text-[#556858] max-w-md mx-auto leading-relaxed">
+        <BotanicalFlourishCrest className="my-2" />
+        <p className="mt-2 text-xs sm:text-sm text-[#465A49] max-w-xs mx-auto leading-relaxed">
           {gifts.intro}
         </p>
       </div>
 
-      {/* Bank Account Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-8">
-        {gifts.accounts.map((acc) => {
-          const isCopied = copiedBank === acc.bankName;
+      {/* Bank Account Cards or Fallback Card */}
+      {gifts.accounts.length > 0 ? (
+        <div className="flex flex-col gap-4 mb-8 w-full">
+          {gifts.accounts.map((acc) => {
+            const isCopied = copiedBank === acc.bankName;
 
-          return (
-            <div
-              key={acc.bankName}
-              className="bg-white/90 border border-ivory-200 rounded-3xl p-6 shadow-sm flex flex-col justify-between items-center text-center"
-            >
-              <div className="mb-4">
-                <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-ivory-50 text-sage-700 border border-sage-200 mb-3">
-                  {acc.bankName}
-                </span>
-                <p className="font-mono text-lg sm:text-xl font-bold text-sage-900 tracking-wider">
-                  {acc.accountNumber}
-                </p>
-                <p className="text-xs text-[#556858] mt-1 font-medium">
-                  a.n. {acc.accountHolder}
-                </p>
-              </div>
-
-              {/* 1-Click Copy Button - R-26 */}
-              <button
-                type="button"
-                onClick={() => handleCopy(acc.accountNumber, acc.bankName)}
-                aria-label={`Salin nomor rekening ${acc.bankName}`}
-                className={`inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full text-xs font-medium transition-all min-h-11 min-w-35 focus-visible:ring-2 focus-visible:ring-gold-400 ${
-                  isCopied
-                    ? "bg-sage-700 text-ivory-50"
-                    : "bg-ivory-50 text-sage-700 border border-sage-200 hover:bg-sage-100"
-                }`}
+            return (
+              <div
+                key={acc.bankName}
+                className="relative w-full bg-white/95 border border-gold-300/60 rounded-3xl p-5 sm:p-6 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between items-center text-center overflow-hidden"
               >
-                {isCopied ? (
-                  <>
-                    <Check className="w-3.5 h-3.5 text-gold-100" />
-                    <span>Tersalin!</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-3.5 h-3.5 text-gold-400" />
-                    <span>Salin Rekening</span>
-                  </>
-                )}
-              </button>
-            </div>
-          );
-        })}
-      </div>
+                <FloralCardCorner position="top-right" size={38} className="absolute top-0 right-0" />
+                <FloralCardCorner position="bottom-left" size={38} className="absolute bottom-0 left-0" />
+                <div className="mb-5 flex flex-col items-center">
+                  {acc.logoUrl ? (
+                    <div className="h-10 sm:h-12 w-32 relative mb-4 flex items-center justify-center">
+                      <Image
+                        src={acc.logoUrl}
+                        alt={`Logo ${acc.bankName}`}
+                        width={128}
+                        height={40}
+                        className="object-contain h-8 sm:h-9 w-auto"
+                        priority
+                      />
+                    </div>
+                  ) : (
+                    <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-ivory-50 text-sage-700 border border-sage-200 mb-3">
+                      {acc.bankName}
+                    </span>
+                  )}
+
+                  <p className="font-mono text-xl sm:text-2xl font-bold text-sage-900 tracking-wider">
+                    {acc.accountNumber}
+                  </p>
+                  <p className="text-xs sm:text-sm text-[#556858] mt-1.5 font-medium">
+                    A.N {acc.accountHolder}
+                  </p>
+                </div>
+
+                {/* 1-Click Copy Button - R-26 */}
+                <button
+                  type="button"
+                  onClick={() => handleCopy(acc.accountNumber, acc.bankName)}
+                  aria-label={`Salin nomor rekening ${acc.bankName}`}
+                  className={`btn-press inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full text-xs sm:text-sm font-medium transition-all min-h-11 min-w-38 shadow-xs focus-visible:ring-2 focus-visible:ring-gold-400 active:scale-90 cursor-pointer ${
+                    isCopied
+                      ? "bg-sage-700 text-ivory-50"
+                      : "bg-ivory-50 text-sage-700 border border-sage-200 hover:bg-sage-100 hover:border-gold-300"
+                  }`}
+                >
+                  {isCopied ? (
+                    <>
+                      <Check className="w-4 h-4 text-gold-100" />
+                      <span>Nomor Tersalin!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-4 h-4 text-gold-400" />
+                      <span>Salin Rekening</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="bg-white/90 border border-ivory-200 rounded-3xl p-8 sm:p-10 shadow-sm max-w-lg mx-auto mb-8 space-y-4">
+          <div className="w-14 h-14 mx-auto rounded-full bg-sage-50 border border-gold-400/40 flex items-center justify-center">
+            <Gift className="w-7 h-7 text-gold-500" />
+          </div>
+          <h3 className="font-serif-cormorant text-2xl sm:text-3xl text-sage-900 font-medium">
+            Doa Restu Anda Hadiah Terindah
+          </h3>
+          <p className="text-xs sm:text-sm text-[#556858] leading-relaxed max-w-md mx-auto">
+            Kehadiran, silaturahmi, serta doa restu yang tulus dari Bapak/Ibu/Saudara/i merupakan karunia yang paling bermakna bagi kami berdua.
+          </p>
+          <div className="pt-2 text-[11px] text-sage-600/80 italic border-t border-ivory-200/80">
+            Terima kasih atas kebaikan dan doa tulus yang Anda berikan.
+          </div>
+        </div>
+      )}
 
       {/* QRIS & WhatsApp Confirmation Actions */}
       <div className="flex flex-wrap items-center justify-center gap-3">
@@ -105,16 +140,18 @@ export function GiftSection() {
           </button>
         )}
 
-        <a
-          href={whatsappUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="Konfirmasi pengiriman tanda kasih via WhatsApp"
-          className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-xs sm:text-sm font-medium text-ivory-50 bg-sage-700 hover:bg-sage-800 transition-colors shadow-sm min-h-11 focus-visible:ring-2 focus-visible:ring-gold-400"
-        >
-          <MessageCircle className="w-4 h-4 text-gold-100" />
-          <span>Konfirmasi via WhatsApp</span>
-        </a>
+        {gifts.confirmationPhone ? (
+          <a
+            href={whatsappUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Konfirmasi pengiriman tanda kasih via WhatsApp"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-xs sm:text-sm font-medium text-ivory-50 bg-sage-700 hover:bg-sage-800 transition-colors shadow-sm min-h-11 focus-visible:ring-2 focus-visible:ring-gold-400"
+          >
+            <MessageCircle className="w-4 h-4 text-gold-100" />
+            <span>Konfirmasi via WhatsApp</span>
+          </a>
+        ) : null}
       </div>
 
       {/* QRIS Modal Dialog (R-26, R-32) */}

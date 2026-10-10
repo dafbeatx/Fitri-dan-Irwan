@@ -13,14 +13,14 @@ export function StorySection() {
       className="py-16 sm:py-20 px-4 sm:px-6 max-w-4xl mx-auto"
     >
       <div className="text-center mb-12">
-        <div className="flex items-center justify-center gap-2 text-xs uppercase tracking-[0.25em] text-gold-600 font-semibold mb-2">
+        <div className="flex items-center justify-center gap-2 text-[10px] uppercase tracking-[0.35em] text-gold-600 font-semibold mb-2.5">
           <BookHeart className="w-4 h-4 text-gold-400" />
           <span>Kisah Kami</span>
         </div>
-        <h2 className="font-serif-cormorant text-3xl sm:text-4xl md:text-5xl font-normal text-sage-900">
+        <h2 className="font-serif-cormorant text-3xl sm:text-4xl md:text-5xl font-normal text-sage-900 tracking-wide">
           Perjalanan Cinta
         </h2>
-        <p className="mt-3 text-sm text-[#556858] max-w-md mx-auto">
+        <p className="mt-3 text-xs sm:text-sm text-[#465A49] max-w-md mx-auto leading-relaxed">
           Setiap kisah memiliki awal, dan inilah jejak langkah yang membawa kami bersatu.
         </p>
       </div>

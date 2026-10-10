@@ -15,37 +15,6 @@ export const supabase = isSupabaseConfigured
   ? createClient(supabaseUrl as string, supabaseAnonKey as string)
   : null;
 
-// Initial warm sample wishes (R-38: Honest initial fallback data)
-const INITIAL_LOCAL_GUESTBOOK: GuestbookEntry[] = [
-  {
-    id: "init-1",
-    name: "Keluarga Besar Bpk. Rahmat Subagio",
-    relationship: "Keluarga",
-    attendance: "hadir",
-    message:
-      "Barakallahu lakuma wa baraka alaika wa jamaa bainakuma fii khoir. Selamat menempuh hidup baru untuk Fitri dan Irwan. Semoga senantiasa menjadi keluarga yang sakinah, mawaddah, warahmah.",
-    created_at: new Date(Date.now() - 3600000 * 24).toISOString(),
-  },
-  {
-    id: "init-2",
-    name: "Dimas & Rina",
-    relationship: "Sahabat",
-    attendance: "hadir",
-    message:
-      "Selamat berbahagia sahabatku Irwan dan Fitri! Lancar sampai hari H, semoga selalu dipenuhi keberkahan dan kebahagiaan dalam membina rumah tangga.",
-    created_at: new Date(Date.now() - 3600000 * 12).toISOString(),
-  },
-  {
-    id: "init-3",
-    name: "Siti Nurhaliza",
-    relationship: "Teman Kerja",
-    attendance: "hadir",
-    message:
-      "Selamat atas pernikahan Fitri dan Mas Irwan. Turut berbahagia dan mendoakan yang terbaik untuk perjalanan baru kalian.",
-    created_at: new Date(Date.now() - 3600000 * 4).toISOString(),
-  },
-];
-
 const LOCAL_STORAGE_GUESTBOOK_KEY = "fitri_irwan_guestbook_entries";
 const LOCAL_STORAGE_RSVP_KEY = "fitri_irwan_rsvp_entries";
 
@@ -150,17 +119,23 @@ export async function submitRsvp(
 
 function getLocalGuestbookEntries(): GuestbookEntry[] {
   if (typeof window === "undefined") {
-    return INITIAL_LOCAL_GUESTBOOK;
+    return [];
   }
   try {
     const raw = localStorage.getItem(LOCAL_STORAGE_GUESTBOOK_KEY);
     if (!raw) {
-      localStorage.setItem(LOCAL_STORAGE_GUESTBOOK_KEY, JSON.stringify(INITIAL_LOCAL_GUESTBOOK));
-      return INITIAL_LOCAL_GUESTBOOK;
+      return [];
     }
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    // Filter out previous mock init entries if any
+    const realEntries = parsed.filter((item: GuestbookEntry) => !item.id?.startsWith("init-"));
+    if (realEntries.length !== parsed.length) {
+      localStorage.setItem(LOCAL_STORAGE_GUESTBOOK_KEY, JSON.stringify(realEntries));
+    }
+    return realEntries;
   } catch {
-    return INITIAL_LOCAL_GUESTBOOK;
+    return [];
   }
 }
 

@@ -5,7 +5,7 @@ import { getGuestbookEntries, addGuestbookEntry, isSupabaseConfigured } from "@/
 import { GuestbookEntry, AttendanceStatus } from "@/types/wedding";
 import { MessageSquareHeart, Send, Loader2, Database, Sparkles, Check } from "lucide-react";
 import confetti from "canvas-confetti";
-import { BotanicalDivider } from "./BotanicalDecor";
+import { BotanicalDivider, BotanicalFlourishCrest, FloralCardCorner } from "./BotanicalDecor";
 
 interface GuestbookSectionProps {
   initialGuestName?: string;
@@ -117,17 +117,18 @@ export function GuestbookSection({ initialGuestName = "" }: GuestbookSectionProp
   return (
     <section
       aria-label="Buku Tamu dan Doa Restu"
-      className="py-16 sm:py-20 px-4 sm:px-6 max-w-4xl mx-auto"
+      className="py-12 sm:py-16 px-4 max-w-sm mx-auto"
     >
-      <div className="text-center mb-10">
-        <div className="flex items-center justify-center gap-2 text-xs uppercase tracking-[0.25em] text-gold-600 font-semibold mb-2">
+      <div className="text-center mb-8">
+        <div className="flex items-center justify-center gap-2 text-[10px] uppercase tracking-[0.35em] text-gold-600 font-semibold mb-2.5">
           <MessageSquareHeart className="w-4 h-4 text-gold-400" />
           <span>Buku Tamu</span>
         </div>
-        <h2 className="font-serif-cormorant text-3xl sm:text-4xl md:text-5xl font-normal text-sage-900">
+        <h2 className="font-serif-cormorant text-3xl sm:text-4xl font-normal text-sage-900 tracking-wide">
           Ucapan &amp; Doa Restu
         </h2>
-        <p className="mt-3 text-sm text-[#556858] max-w-md mx-auto">
+        <BotanicalFlourishCrest className="my-2" />
+        <p className="mt-2 text-xs sm:text-sm text-[#465A49] max-w-xs mx-auto leading-relaxed">
           Tuliskan doa tulus dan harapan terbaik Anda untuk mengiringi langkah baru kami.
         </p>
 
@@ -140,9 +141,11 @@ export function GuestbookSection({ initialGuestName = "" }: GuestbookSectionProp
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <div className="flex flex-col gap-6 items-stretch w-full">
         {/* Form Column */}
-        <div className="lg:col-span-5 bg-white/90 border border-ivory-200 rounded-3xl p-6 shadow-sm">
+        <div className="relative w-full bg-white/95 border border-gold-300/60 rounded-3xl p-5 sm:p-6 shadow-sm overflow-hidden">
+          <FloralCardCorner position="top-right" size={38} className="absolute top-0 right-0" />
+          <FloralCardCorner position="bottom-left" size={38} className="absolute bottom-0 left-0" />
           <h3 className="font-serif-cormorant text-xl font-semibold text-sage-900 mb-4 flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-gold-400" />
             Kirim Doa Restu
@@ -236,7 +239,7 @@ export function GuestbookSection({ initialGuestName = "" }: GuestbookSectionProp
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full flex items-center justify-center gap-2 py-3 px-5 rounded-full bg-sage-700 text-ivory-50 font-medium text-xs sm:text-sm tracking-wide shadow-sm hover:bg-sage-800 active:scale-[0.98] transition-all disabled:opacity-70 min-h-11 focus-visible:ring-2 focus-visible:ring-gold-400"
+              className="btn-press w-full flex items-center justify-center gap-2 py-3 px-5 rounded-full bg-sage-700 text-ivory-50 font-medium text-xs sm:text-sm tracking-wide shadow-sm hover:bg-sage-800 active:scale-95 transition-all disabled:opacity-70 min-h-11 focus-visible:ring-2 focus-visible:ring-gold-400 cursor-pointer"
             >
               {isSubmitting ? (
                 <>
@@ -254,7 +257,7 @@ export function GuestbookSection({ initialGuestName = "" }: GuestbookSectionProp
         </div>
 
         {/* Wishes List Column (R-27: Loading, Empty, and Populated States) */}
-        <div className="lg:col-span-7 bg-white/90 border border-ivory-200 rounded-3xl p-6 shadow-sm">
+        <div className="w-full bg-white/90 border border-ivory-200 rounded-3xl p-5 sm:p-6 shadow-sm">
           <div className="flex items-center justify-between pb-4 mb-4 border-b border-ivory-200">
             <h3 className="font-serif-cormorant text-xl font-semibold text-sage-900">
               Untaian Doa ({entries.length})

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
 import { weddingData } from "@/config/wedding-data";
 import { X, ChevronLeft, ChevronRight, Image as ImageIcon, Camera } from "lucide-react";
 import { BotanicalDivider } from "./BotanicalDecor";
@@ -46,23 +47,23 @@ export function GallerySection() {
     <section
       id="galeri"
       aria-label="Galeri Foto Kebersamaan"
-      className="py-16 sm:py-20 px-4 sm:px-6 max-w-5xl mx-auto"
+      className="py-12 sm:py-16 px-4 max-w-sm mx-auto"
     >
-      <div className="text-center mb-12">
-        <div className="flex items-center justify-center gap-2 text-xs uppercase tracking-[0.25em] text-gold-600 font-semibold mb-2">
+      <div className="text-center mb-8">
+        <div className="flex items-center justify-center gap-2 text-[10px] uppercase tracking-[0.35em] text-gold-600 font-semibold mb-2.5">
           <Camera className="w-4 h-4 text-gold-400" />
           <span>Momen Bahagia</span>
         </div>
-        <h2 className="font-serif-cormorant text-3xl sm:text-4xl md:text-5xl font-normal text-sage-900">
+        <h2 className="font-serif-cormorant text-3xl sm:text-4xl font-normal text-sage-900 tracking-wide">
           Galeri Foto
         </h2>
-        <p className="mt-3 text-sm text-[#556858] max-w-md mx-auto">
+        <p className="mt-2 text-xs sm:text-sm text-[#465A49] max-w-xs mx-auto leading-relaxed">
           Setiap gambar mengabadikan ketulusan dan kebahagiaan dalam perjalanan kami.
         </p>
       </div>
 
       {/* Grid of Photos */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-6">
+      <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
         {gallery.map((photo, index) => (
           <button
             key={photo.id}
@@ -71,18 +72,28 @@ export function GallerySection() {
             aria-label={`Lihat foto: ${photo.caption || photo.alt}`}
             className="group relative aspect-square rounded-2xl overflow-hidden bg-ivory-50 border border-ivory-200 shadow-sm hover:shadow-md transition-all text-left focus-visible:ring-2 focus-visible:ring-gold-400"
           >
-            {/* Visual Card / Placeholder */}
-            <div className="w-full h-full flex flex-col items-center justify-center p-4 bg-linear-to-b from-ivory-50 to-sage-100 text-sage-600 group-hover:scale-105 transition-transform duration-300">
-              <div className="w-12 h-12 rounded-full border border-gold-400/50 bg-white/80 flex items-center justify-center mb-2 shadow-xs">
-                <ImageIcon className="w-5 h-5 text-sage-700" />
+            {/* Visual Card / Image */}
+            {photo.src ? (
+              <Image
+                src={photo.src}
+                alt={photo.alt}
+                width={360}
+                height={360}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+            ) : (
+              <div className="w-full h-full flex flex-col items-center justify-center p-4 bg-linear-to-b from-ivory-50 to-sage-100 text-sage-600 group-hover:scale-105 transition-transform duration-300">
+                <div className="w-12 h-12 rounded-full border border-gold-400/50 bg-white/80 flex items-center justify-center mb-2 shadow-xs">
+                  <ImageIcon className="w-5 h-5 text-sage-700" />
+                </div>
+                <span className="font-serif-cormorant text-base sm:text-lg font-medium text-sage-900 text-center line-clamp-2">
+                  {photo.caption || photo.alt}
+                </span>
+                <span className="text-[11px] text-[#556858] mt-1 uppercase tracking-wider">
+                  Momen #{index + 1}
+                </span>
               </div>
-              <span className="font-serif-cormorant text-base sm:text-lg font-medium text-sage-900 text-center line-clamp-2">
-                {photo.caption || photo.alt}
-              </span>
-              <span className="text-[11px] text-[#556858] mt-1 uppercase tracking-wider">
-                Momen #{index + 1}
-              </span>
-            </div>
+            )}
 
             <div className="absolute inset-0 bg-sage-700/10 opacity-0 group-hover:opacity-100 transition-opacity" />
           </button>
@@ -129,17 +140,28 @@ export function GallerySection() {
 
           {/* Modal Content */}
           <div className="max-w-2xl w-full bg-white rounded-3xl overflow-hidden shadow-2xl p-6 sm:p-8 text-center flex flex-col items-center">
-            <div className="w-full aspect-4/3 rounded-2xl bg-sage-100 border border-sage-200 flex flex-col items-center justify-center p-6 text-sage-700 mb-4">
-              <div className="w-16 h-16 rounded-full border-2 border-gold-400 bg-white flex items-center justify-center mb-3">
-                <Camera className="w-8 h-8 text-sage-700" />
-              </div>
-              <h3 className="font-serif-cormorant text-2xl sm:text-3xl font-semibold text-sage-900">
-                {gallery[activePhotoIndex].caption}
-              </h3>
-              <p className="text-xs text-[#556858] mt-2">
-                {gallery[activePhotoIndex].alt}
-              </p>
+            <div className="w-full max-h-[60vh] rounded-2xl bg-sage-50 border border-sage-200 overflow-hidden flex items-center justify-center mb-4 relative aspect-4/3 sm:aspect-16/10">
+              {gallery[activePhotoIndex].src ? (
+                <Image
+                  src={gallery[activePhotoIndex].src}
+                  alt={gallery[activePhotoIndex].alt}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 680px"
+                  className="w-full h-full object-contain rounded-2xl"
+                />
+              ) : (
+                <div className="p-8 flex flex-col items-center text-sage-700">
+                  <Camera className="w-12 h-12 mb-3 text-gold-500" />
+                  <p className="font-serif-cormorant text-xl text-sage-900">{gallery[activePhotoIndex].caption}</p>
+                </div>
+              )}
             </div>
+            <h3 className="font-serif-cormorant text-xl sm:text-2xl font-semibold text-sage-900">
+              {gallery[activePhotoIndex].caption}
+            </h3>
+            <p className="text-xs text-[#556858] mt-1 mb-2">
+              {gallery[activePhotoIndex].alt}
+            </p>
 
             <div className="flex items-center justify-between w-full text-xs text-[#556858] px-2">
               <span>Fitri &amp; Irwan</span>

@@ -3,24 +3,26 @@ import { BankAccount, GalleryPhoto, StoryTimelineItem } from "@/types/wedding";
 export const weddingData = {
   couple: {
     bride: {
-      fullName: "Fitriani Nurul Hidayah, S.Pd.",
+      fullName: "Fitri Ani Rahayu, S.Mat",
       shortName: "Fitri",
       role: "Mempelai Wanita",
-      parents: "Putri kedua dari Bpk. H. Ahmad Subagio & Ibu Hj. Siti Maryam",
-      instagram: "fitriani.hidayah",
-      avatar: "/images/bride.jpg",
-      bio: "Wanita yang teduh hatinya, penuh kehangatan, dan mencintai dunia pendidikan.",
+      parents: "Putri dari Bapak Saptoni (Alm) & Ibu Ade Irma Hayati",
+      parentOrigin: "Kp. Cemplang, RT 03 RW 09 Cibungbulang, Kab. Bogor",
+      avatar: "/images/pas-foto-fitri-transparent.png",
+      bio: "Wanita yang teduh hatinya, penuh kehangatan, dan mencintai kebaikan.",
     },
     groom: {
-      fullName: "Irwan Kurniawan, S.Kom.",
+      fullName: "Irwan Supriatna",
       shortName: "Irwan",
       role: "Mempelai Pria",
-      parents: "Putra pertama dari Bpk. H. Bambang Sudirman & Ibu Hj. Nurhayati",
-      instagram: "irwan.kurniawan",
-      avatar: "/images/groom.jpg",
+      parents: "Putra dari Bapak Mairan & Ibu Erun (Almh)",
+      parentOrigin: "Kp. Cipeundeuy RT 05 / RW 01",
+      avatar: "/images/pas-foto-irwan-transparent.png",
       bio: "Pria yang teguh, berdedikasi, dan siap membimbing keluarga menuju ridho Allah SWT.",
     },
   },
+
+  coupleIntro: "Maha suci Allah SWT yang telah menciptakan makhluk-Nya berpasang-pasangan. Ya Allah, perkenankanlah kami merangkaikan kasih sayang yang Kau ciptakan diantara putra-putri kami :",
 
   quranVerse: {
     surah: "QS. Ar-Rum Ayat 21",
@@ -29,43 +31,52 @@ export const weddingData = {
   },
 
   events: {
-    targetDateIso: "2026-12-12T08:00:00+07:00",
-    dateFormatted: "Sabtu, 12 Desember 2026",
+    targetDateIso: "2026-10-23T08:00:00+07:00",
+    dateFormatted: "Jum'at, 23 Oktober 2026",
+    invitationIntro: "Dengan memohon Rahmat dan Ridho Allah SWT. kami bermaksud mengundang Bapak/Ibu/Saudara/i untuk menghadiri Acara Pernikahan putra-putri kami, yang Insya Allah akan diselenggarakan pada :",
+    venueTitle: "Kediaman Mempelai Wanita",
+    venueAddress: "Kp. Cemplang, RT 03 RW 09 Cibungbulang, Kab. Bogor",
     akad: {
       title: "Akad Nikah",
-      day: "Sabtu",
-      date: "12 Desember 2026",
-      time: "08.00 - 10.00 WIB",
-      locationName: "Masjid Raya & Ballroom Graha Harmony",
-      address: "Jl. Taman Cempaka No. 88, Kebayoran Baru, Jakarta Selatan",
+      day: "Jum'at",
+      date: "23 Oktober 2026",
+      time: "Pukul : 08.00 WIB s/d Selesai",
+      locationName: "Kediaman Mempelai Wanita",
+      address: "Kp. Cemplang, RT 03 RW 09 Cibungbulang, Kab. Bogor",
       notes: "Dimohon hadir tepat waktu untuk menjaga kekhidmatan prosesi ijab qobul.",
     },
     resepsi: {
       title: "Resepsi Pernikahan",
-      day: "Sabtu",
-      date: "12 Desember 2026",
-      time: "11.00 - 14.30 WIB",
-      locationName: "Grand Ballroom Graha Harmony",
-      address: "Jl. Taman Cempaka No. 88, Kebayoran Baru, Jakarta Selatan",
-      notes: "Drescode: Busana Formal bernuansa Sage Green, Earth Tone, atau Batik.",
+      day: "Jum'at",
+      date: "23 Oktober 2026",
+      time: "Pukul : 08.00 - 16.00 WIB",
+      locationName: "Kediaman Mempelai Wanita",
+      address: "Kp. Cemplang, RT 03 RW 09 Cibungbulang, Kab. Bogor",
+      notes: "Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu.",
     },
     locationMap: {
-      venueTitle: "Graha Harmony Ballroom",
-      googleMapsUrl: "https://maps.google.com/?q=Jakarta+Selatan",
-      embedUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d126920.28298717878!2d106.74438318464161!3d-6.262590240974868!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69f1a26d787799%3A0x301576d14fedac0!2sJakarta%20Selatan!5e0!3m2!1sid!2sid!4v1700000000000",
+      venueTitle: "Kediaman Mempelai Wanita (Kp. Cemplang)",
+      googleMapsUrl: "https://maps.app.goo.gl/psU9hwanQsbheV8h9",
+      embedUrl: "https://www.google.com/maps?q=-6.5826667,106.6566389&hl=id&z=17&output=embed",
     },
+  },
+
+  closing: {
+    gratitude: "Atas kehadiran dan do'a restu Bapak/Ibu/Saudara/i, kami ucapkan terimakasih",
+    signer: "Kami Yang Berbahagia",
+    names: "Fitri & Irwan",
   },
 
   loveStory: [
     {
       year: "2021",
       title: "Awal Berjumpa",
-      description: "Pertemuan pertama dalam sebuah forum kepemudaan. Sebuah percakapan sederhana yang mengawali rasa saling menghargai dan bertukar pandangan hidup.",
+      description: "Pertemuan pertama yang mengawali kisah. Sebuah percakapan sederhana yang menumbuhkan rasa saling menghargai dan bertukar pandangan hidup.",
     },
     {
       year: "2023",
       title: "Komitmen Bersama",
-      description: "Dengan niat yang lurus dan restu dari kedua keluarga, kami memutuskan untuk saling mendampingi dan mempersiapkan diri menuju jenjang yang lebih berkah.",
+      description: "Dengan niat yang tulus dan doa restu kedua keluarga, kami memantapkan langkah untuk saling mendampingi menuju masa depan bersama.",
     },
     {
       year: "2026",
@@ -73,48 +84,36 @@ export const weddingData = {
       description: "Momen sakral saat keluarga besar saling bersilaturahmi dan memantapkan langkah untuk menyatukan dua hati dalam ikatan pernikahan suci.",
     },
     {
-      year: "12 Des 2026",
+      year: "23 Okt 2026",
       title: "Menuju Bahtera Bahagia",
-      description: "Insya Allah, ikrar suci akan terucap. Awal perjalanan baru kami sebagai sepasang suami istri untuk saling menyayangi hingga akhir hayat.",
+      description: "Insya Allah, ikrar suci akan terucap pada hari Jumat, 23 Oktober 2026. Awal perjalanan baru kami sebagai sepasang suami istri yang sakinah, mawaddah, warahmah.",
     },
   ] as StoryTimelineItem[],
 
   gallery: [
     {
       id: "gal-1",
-      src: "/images/gallery-1.jpg",
-      alt: "Momen Bahagia Fitri dan Irwan",
-      caption: "Kehangatan dalam senyuman bersama",
+      src: "/images/fitri-irwan-asli.png",
+      alt: "Foto Asli Fitri dan Irwan",
+      caption: "Potret Bahagia Fitri & Irwan",
     },
     {
       id: "gal-2",
-      src: "/images/gallery-2.jpg",
-      alt: "Foto Prewedding Outdoor",
-      caption: "Menatap masa depan dengan penuh rasa syukur",
+      src: "/images/bu-fitri-asli.png",
+      alt: "Foto Mempelai Wanita Fitriani",
+      caption: "Mempelai Wanita (Fitri)",
     },
     {
       id: "gal-3",
-      src: "/images/gallery-3.jpg",
-      alt: "Momen Prosesi Khitbah",
-      caption: "Langkah awal mengikat janji suci",
+      src: "/images/cover-card.png",
+      alt: "Momen Bersama Fitri & Irwan",
+      caption: "Menuju Hari Bahagia 23 Oktober 2026",
     },
     {
       id: "gal-4",
-      src: "/images/gallery-4.jpg",
-      alt: "Potret Bersama di Bawah Pepohonan",
-      caption: "Teduh dan penuh ketenangan dalam kebersamaan",
-    },
-    {
-      id: "gal-5",
-      src: "/images/gallery-5.jpg",
-      alt: "Cincin Pengikat Janji",
-      caption: "Simbol komitmen suci dua insan",
-    },
-    {
-      id: "gal-6",
-      src: "/images/gallery-6.jpg",
-      alt: "Tawa dan Keceriaan Bersama",
-      caption: "Kebahagiaan yang sederhana namun bermakna mendalam",
+      src: "/images/fitri-irwan-asli.png",
+      alt: "Kebahagiaan Fitri & Irwan",
+      caption: "Tawa dan Rasa Syukur Bersama",
     },
   ] as GalleryPhoto[],
 
@@ -123,26 +122,23 @@ export const weddingData = {
     accounts: [
       {
         bankName: "BCA",
-        accountNumber: "5420189281",
-        accountHolder: "Fitriani Nurul Hidayah",
-      },
-      {
-        bankName: "Bank Mandiri",
-        accountNumber: "1370019283719",
-        accountHolder: "Irwan Kurniawan",
+        accountNumber: "7410805477",
+        accountHolder: "Irwan Supriatna",
+        logoUrl: "/images/bca-logo.svg",
       },
     ] as BankAccount[],
     qris: {
-      enabled: true,
+      enabled: false,
       imageSrc: "/images/qris.png",
       title: "QRIS Tanda Kasih",
-      description: "Dapat dipindai melalui aplikasi m-Banking atau e-Wallet apapun (GoPay, OVO, Dana, ShopeePay)",
+      description: "Dapat dipindai melalui aplikasi m-Banking atau e-Wallet apapun",
     },
-    confirmationPhone: "6281234567890",
+    confirmationPhone: "",
   },
 
   audio: {
-    src: "/audio/wedding-melody.mp3",
-    title: "Acoustic Wedding Serenade",
+    src: "/audio/spencer-combs-you-are-mine.mp3",
+    title: "Spencer Combs (Feat Holley Maher) - You Are Mine",
   },
 };
+

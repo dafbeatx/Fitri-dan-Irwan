@@ -22,6 +22,7 @@ export interface BankAccount {
   accountNumber: string;
   accountHolder: string;
   iconName?: string;
+  logoUrl?: string;
 }
 
 export interface StoryTimelineItem {

@@ -10,7 +10,7 @@ interface AudioPlayerProps {
 
 export function AudioPlayer({
   autoPlayTriggered,
-  audioSrc = "/audio/wedding-melody.mp3",
+  audioSrc = "/audio/spencer-combs-you-are-mine.mp3",
 }: AudioPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isSynthesizing, setIsSynthesizing] = useState(false);
@@ -149,13 +149,13 @@ export function AudioPlayer({
   }, []);
 
   return (
-    <div className="fixed top-5 right-5 z-40">
+    <div className="fixed top-4 right-4 sm:top-5 sm:right-[max(1rem,calc(50%-165px))] z-40">
       <audio ref={audioRef} src={audioSrc} loop preload="auto" />
       <button
         onClick={toggleMusic}
         type="button"
         aria-label={isPlaying ? "Jeda musik latar" : "Putar musik latar"}
-        className="group relative flex items-center gap-2 p-2.5 rounded-full bg-ivory-50/90 border border-gold-400/50 shadow-md backdrop-blur-sm transition-all hover:scale-105 active:scale-95 focus-visible:ring-2 focus-visible:ring-gold-400 min-w-11 min-h-11"
+        className="btn-press group relative flex items-center gap-2 p-2.5 rounded-full bg-ivory-50/95 border border-gold-400/60 shadow-md backdrop-blur-sm transition-all hover:scale-105 active:scale-90 focus-visible:ring-2 focus-visible:ring-gold-400 min-w-11 min-h-11"
       >
         <span
           className={`flex items-center justify-center w-8 h-8 rounded-full bg-sage-700 text-ivory-50 transition-transform ${

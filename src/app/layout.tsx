@@ -1,6 +1,14 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, Plus_Jakarta_Sans, Alex_Brush, Amiri } from "next/font/google";
 import "./globals.css";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  viewportFit: "cover",
+  themeColor: "#FAF8F5",
+};
 
 const cormorant = Cormorant_Garamond({
   variable: "--font-cormorant",
@@ -50,7 +58,7 @@ export default function RootLayout({
       lang="id"
       className={`${cormorant.variable} ${jakarta.variable} ${alexBrush.variable} ${amiri.variable} scroll-smooth`}
     >
-      <body className="min-h-screen bg-[#FAF8F5] text-[#1F2D22] font-sans antialiased selection:bg-[#C3A16A]/20 selection:text-[#1F2D22]">
+      <body className="min-h-screen bg-ivory-50 text-sage-900 font-sans antialiased selection:bg-gold-400/20 selection:text-sage-900">
         {children}
       </body>
     </html>

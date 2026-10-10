@@ -3,9 +3,9 @@
 import React, { useState } from "react";
 import { submitRsvp } from "@/lib/supabase";
 import { AttendanceStatus } from "@/types/wedding";
-import { CheckCircle2, AlertCircle, Loader2, Send } from "lucide-react";
+import { CheckCircle2, AlertCircle, Loader2, Send, MessageCircle } from "lucide-react";
 import confetti from "canvas-confetti";
-import { BotanicalDivider } from "./BotanicalDecor";
+import { BotanicalDivider, BotanicalFlourishCrest, FloralCardCorner } from "./BotanicalDecor";
 
 interface RsvpSectionProps {
   initialGuestName?: string;
@@ -66,25 +66,39 @@ export function RsvpSection({ initialGuestName = "", onSuccess }: RsvpSectionPro
     }
   };
 
+  const handleOpenWhatsApp = () => {
+    const statusText = attendance === "hadir" ? "Hadir" : attendance === "ragu" ? "Masih Ragu" : "Tidak Hadir";
+    const text = `Assalamu'alaikum, konfirmasi undangan pernikahan Fitri & Irwan.%0A%0A` +
+      `*Nama:* ${encodeURIComponent(name.trim() || "Tamu Undangan")}%0A` +
+      `*Kehadiran:* ${encodeURIComponent(statusText)}%0A` +
+      `*Jumlah Tamu:* ${encodeURIComponent(attendance === "hadir" ? `${guestsCount} Orang` : "-")}%0A` +
+      `*Pesan / Doa:* ${encodeURIComponent(message.trim() || "-")}`;
+    const waUrl = `https://wa.me/?text=${text}`;
+    window.open(waUrl, "_blank", "noopener,noreferrer");
+  };
+
   return (
     <section
       id="rsvp"
       aria-label="Konfirmasi Kehadiran Tamu"
-      className="py-16 sm:py-20 px-4 sm:px-6 max-w-xl mx-auto"
+      className="py-12 sm:py-16 px-4 max-w-sm mx-auto"
     >
-      <div className="text-center mb-10">
-        <span className="text-xs uppercase tracking-[0.25em] text-gold-600 font-semibold block mb-2">
+      <div className="text-center mb-8">
+        <span className="text-[10px] uppercase tracking-[0.35em] text-gold-600 font-semibold block mb-2.5">
           Reservasi &amp; Konfirmasi
         </span>
-        <h2 className="font-serif-cormorant text-3xl sm:text-4xl md:text-5xl font-normal text-sage-900">
+        <h2 className="font-serif-cormorant text-3xl sm:text-4xl font-normal text-sage-900 tracking-wide">
           Konfirmasi Kehadiran
         </h2>
-        <p className="mt-3 text-sm text-[#556858] leading-relaxed">
+        <BotanicalFlourishCrest className="my-2" />
+        <p className="mt-2 text-xs sm:text-sm text-[#465A49] leading-relaxed max-w-xs mx-auto">
           Guna kelancaran dan kenyamanan bersama, mohon berkenan mengonfirmasi kehadiran Anda sebelum tanggal acara.
         </p>
       </div>
 
-      <div className="bg-white/90 border border-ivory-200 rounded-3xl p-6 sm:p-8 shadow-sm">
+      <div className="relative w-full bg-white/95 border border-gold-300/60 rounded-3xl p-5 sm:p-6 shadow-sm overflow-hidden">
+        <FloralCardCorner position="top-right" size={38} className="absolute top-0 right-0" />
+        <FloralCardCorner position="bottom-left" size={38} className="absolute bottom-0 left-0" />
         {isSubmitted ? (
           /* Success State (R-27) */
           <div className="py-8 text-center space-y-3">
@@ -97,13 +111,23 @@ export function RsvpSection({ initialGuestName = "", onSuccess }: RsvpSectionPro
             <p className="text-sm text-[#556858] max-w-xs mx-auto">
               Konfirmasi kehadiran Anda telah berhasil kami simpan. Kehadiran serta doa restu Anda sangat berarti bagi kami.
             </p>
-            <button
-              type="button"
-              onClick={() => setIsSubmitted(false)}
-              className="mt-4 px-5 py-2 text-xs font-medium text-sage-700 bg-ivory-50 border border-sage-200 rounded-full hover:bg-sage-100 transition-colors min-h-11"
-            >
-              Kirim Konfirmasi Baru
-            </button>
+            <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
+              <button
+                type="button"
+                onClick={handleOpenWhatsApp}
+                className="mt-2 px-5 py-2 text-xs font-medium text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-full hover:bg-emerald-100 transition-colors min-h-11 inline-flex items-center gap-2"
+              >
+                <MessageCircle className="w-4 h-4 text-emerald-600" />
+                <span>Kirim Bukti ke WhatsApp</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsSubmitted(false)}
+                className="mt-2 px-5 py-2 text-xs font-medium text-sage-700 bg-ivory-50 border border-sage-200 rounded-full hover:bg-sage-100 transition-colors min-h-11"
+              >
+                Kirim Konfirmasi Baru
+              </button>
+            </div>
           </div>
         ) : (
           /* Form State */
@@ -212,24 +236,35 @@ export function RsvpSection({ initialGuestName = "", onSuccess }: RsvpSectionPro
               />
             </div>
 
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full flex items-center justify-center gap-2 py-3.5 px-6 rounded-full bg-sage-700 text-ivory-50 font-medium text-sm tracking-wide shadow-md hover:bg-sage-800 active:scale-[0.98] transition-all disabled:opacity-70 min-h-11 focus-visible:ring-2 focus-visible:ring-gold-400"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin text-gold-100" />
-                  <span>Sedang Mengirim...</span>
-                </>
-              ) : (
-                <>
-                  <Send className="w-4 h-4 text-gold-100" />
-                  <span>Kirim Konfirmasi Kehadiran</span>
-                </>
-              )}
-            </button>
+            {/* Submit Buttons */}
+            <div className="space-y-2 pt-1">
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="btn-press w-full flex items-center justify-center gap-2 py-3.5 px-6 rounded-full bg-sage-700 text-ivory-50 font-medium text-sm tracking-wide shadow-md hover:bg-sage-800 active:scale-95 transition-all disabled:opacity-70 min-h-11 focus-visible:ring-2 focus-visible:ring-gold-400 cursor-pointer"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin text-gold-100" />
+                    <span>Sedang Mengirim...</span>
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-4 h-4 text-gold-100" />
+                    <span>Kirim Konfirmasi Kehadiran</span>
+                  </>
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={handleOpenWhatsApp}
+                className="w-full flex items-center justify-center gap-2 py-3 px-6 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-300 font-medium text-xs hover:bg-emerald-100 active:scale-[0.98] transition-all min-h-11 focus-visible:ring-2 focus-visible:ring-emerald-400"
+              >
+                <MessageCircle className="w-4 h-4 text-emerald-600" />
+                <span>Siapkan Draf Pesan WhatsApp</span>
+              </button>
+            </div>
           </form>
         )}
       </div>

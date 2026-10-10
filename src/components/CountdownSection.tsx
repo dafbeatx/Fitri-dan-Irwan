@@ -47,13 +47,13 @@ export function CountdownSection() {
   // Real Google Calendar link
   const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
     "Walimatul 'Ursy Fitri & Irwan"
-  )}&dates=20261212T010000Z/20261212T073000Z&details=${encodeURIComponent(
-    "Undangan Pernikahan Fitriani Nurul Hidayah & Irwan Kurniawan di Ballroom Graha Harmony, Jakarta Selatan."
-  )}&location=${encodeURIComponent(weddingData.events.akad.locationName)}`;
+  )}&dates=20261023T010000Z/20261023T090000Z&details=${encodeURIComponent(
+    "Undangan Pernikahan Fitri Ani Rahayu, S.Mat & Irwan Supriatna di Kediaman Mempelai Wanita, Kp. Cemplang, RT 03 RW 09 Cibungbulang, Kab. Bogor."
+  )}&location=${encodeURIComponent(weddingData.events.akad.address)}`;
 
   return (
     <div className="my-10 max-w-xl mx-auto px-4 text-center">
-      <div className="flex items-center justify-center gap-2 text-xs uppercase tracking-widest text-gold-600 font-semibold mb-4">
+      <div className="flex items-center justify-center gap-2 text-[10px] uppercase tracking-[0.3em] text-gold-600 font-semibold mb-4">
         <Clock className="w-4 h-4 text-gold-400" />
         <span>Menghitung Hari Bahagia</span>
       </div>
@@ -63,7 +63,7 @@ export function CountdownSection() {
           <p className="font-serif-cormorant text-2xl text-sage-700 font-medium">
             Alhamdulillah, Acara Telah Berlangsung
           </p>
-          <p className="text-sm text-[#556858] mt-1">
+          <p className="text-sm text-[#465A49] mt-1">
             Terima kasih atas seluruh doa restu dan kehadiran yang telah diberikan.
           </p>
         </div>
@@ -82,7 +82,7 @@ export function CountdownSection() {
               <span className="font-serif-cormorant text-2xl sm:text-3xl md:text-4xl font-semibold text-sage-900">
                 {String(item.value).padStart(2, "0")}
               </span>
-              <span className="text-[11px] sm:text-xs text-[#556858] uppercase tracking-wider mt-1">
+              <span className="text-[10px] sm:text-[11px] text-[#465A49] uppercase tracking-[0.25em] mt-1 font-medium">
                 {item.label}
               </span>
             </div>
