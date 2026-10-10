@@ -711,6 +711,53 @@ export function CoverScreen({
             </p>
           )}
         </CanvaElementWrapper>
+
+        {/* Aurovia Creative Branding Logo */}
+        {config.showAuroviaLogo !== false && (
+          <CanvaElementWrapper
+            elementId="auroviaLogo"
+            label="Logo Aurovia"
+            transform={config.elementTransforms?.["auroviaLogo"]}
+            isSelected={selectedElementId === "auroviaLogo"}
+            isEditable={isEditable}
+            zoomLevel={zoomLevel}
+            isText={false}
+            href={config.elementHrefs?.["auroviaLogo"] || ""}
+            onUpdateHref={(val) => onUpdateHref?.("auroviaLogo", val)}
+            onSelect={onSelectElement || (() => {})}
+            onUpdateTransform={onUpdateTransform}
+            onToggleLock={onToggleLock}
+            className="block mt-2 sm:mt-2.5 z-20"
+          >
+            {config.elementHrefs?.["auroviaLogo"] ? (
+              <a
+                href={config.elementHrefs["auroviaLogo"]}
+                onClick={(e) => handleLinkClick(e, config.elementHrefs?.["auroviaLogo"])}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex flex-col items-center justify-center opacity-70 hover:opacity-100 transition-opacity"
+              >
+                <Image
+                  src="/images/Logo-Aurovia-Creative.svg"
+                  alt="Aurovia Creative"
+                  width={96}
+                  height={36}
+                  className="h-4.5 sm:h-5 w-auto object-contain filter drop-shadow-xs"
+                />
+              </a>
+            ) : (
+              <div className="flex flex-col items-center justify-center opacity-70 hover:opacity-100 transition-opacity">
+                <Image
+                  src="/images/Logo-Aurovia-Creative.svg"
+                  alt="Aurovia Creative"
+                  width={96}
+                  height={36}
+                  className="h-4.5 sm:h-5 w-auto object-contain filter drop-shadow-xs"
+                />
+              </div>
+            )}
+          </CanvaElementWrapper>
+        )}
       </div>
     </div>
   );

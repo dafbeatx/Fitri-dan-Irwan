@@ -195,6 +195,7 @@ export const CANVAS_LAYERS: CanvasLayerItem[] = [
   { id: "guestName", name: "Nama Tamu Undangan", type: "text", category: "Teks Tamu" },
   { id: "button", name: "Tombol 'Buka Undangan'", type: "button", category: "Aksi Interaktif" },
   { id: "closingNote", name: "Catatan Penutup Puitis", type: "text", category: "Teks Penutup" },
+  { id: "auroviaLogo", name: "Logo Aurovia Creative", type: "ornament", category: "Branding Bawah" },
 ];
 
 export interface WeddingSectionItem {

@@ -73,6 +73,7 @@ export interface CoverConfig {
   elementHrefs?: Record<string, string>;
   closingNote?: string;
   activeTemplateId?: string;
+  showAuroviaLogo?: boolean;
 }
 
 export const DEFAULT_COVER_CONFIG: CoverConfig = {
@@ -129,6 +130,7 @@ export const DEFAULT_COVER_CONFIG: CoverConfig = {
   elementHrefs: {
     names: "#mempelai",
   },
+  showAuroviaLogo: true,
 };
 
 export interface ThemeTemplate {
