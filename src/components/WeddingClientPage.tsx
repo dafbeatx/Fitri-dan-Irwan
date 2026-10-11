@@ -69,8 +69,10 @@ export function WeddingClientPage() {
 
         {/* Main Invitation Content with smooth entrance transition */}
         <main
-          className={`transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)] flex-1 flex flex-col w-full ${
-            isCoverOpen ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+          className={`flex-1 flex flex-col w-full ${
+            isCoverOpen
+              ? "animate-invitation-entrance opacity-100 translate-y-0"
+              : "opacity-0 translate-y-10 scale-95 pointer-events-none"
           }`}
         >
           <ScrollReveal direction="up" delay={50}>

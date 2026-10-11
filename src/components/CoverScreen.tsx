@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import { Heart } from "lucide-react";
 import { CoverConfig, useCoverConfig, CanvasElementTransform } from "@/lib/coverConfig";
@@ -53,6 +53,10 @@ export function CoverScreen({
   const syncedConfig = useCoverConfig();
   const config = previewConfig || syncedConfig;
 
+  // State untuk animasi membuka amplop (Envelope Unfolding Transition)
+  const [isUnfolding, setIsUnfolding] = useState(false);
+  const [isDismissed, setIsDismissed] = useState(false);
+
   // Interactivity helper for href links on cover elements
   const handleLinkClick = (e: React.MouseEvent, targetHref?: string) => {
     if (isEmbedPreview) {
@@ -70,7 +74,26 @@ export function CoverScreen({
     }
   };
 
-  if (isOpen && !isEmbedPreview) return null;
+  const handleOpenClick = (e: React.MouseEvent) => {
+    if (config.elementHrefs?.["button"]) {
+      handleLinkClick(e, config.elementHrefs["button"]);
+      return;
+    }
+    if (isUnfolding) return;
+    setIsUnfolding(true);
+
+    // Mainkan musik dan mulai transisi halaman undangan utama
+    setTimeout(() => {
+      onOpen();
+    }, 600);
+
+    // Selesaikan animasi membuka amplop sebelum cover di-unmount
+    setTimeout(() => {
+      setIsDismissed(true);
+    }, 1250);
+  };
+
+  if ((isDismissed || (isOpen && !isUnfolding)) && !isEmbedPreview) return null;
 
   // Complete Wedding Fonts Map from public/fonts
   const FONT_MAP: Record<string, string> = {
@@ -654,13 +677,7 @@ export function CoverScreen({
           className="block mb-2 sm:mb-2.5"
         >
           <button
-            onClick={(e) => {
-              if (config.elementHrefs?.["button"]) {
-                handleLinkClick(e, config.elementHrefs["button"]);
-              } else {
-                onOpen();
-              }
-            }}
+            onClick={handleOpenClick}
             type="button"
             style={{
               backgroundColor: config.buttonColor || "#713C3C",
@@ -762,6 +779,53 @@ export function CoverScreen({
     </div>
   );
 
+  // Envelope Flap Overlay (Animasi Tutup Amplop Membuka ke Atas secara 3D)
+  const envelopeFlapLayer = (
+    <div
+      className={`absolute top-0 left-0 right-0 h-44 z-35 pointer-events-none transition-all ${
+        isUnfolding ? "animate-envelope-flap" : ""
+      }`}
+      style={{
+        perspective: "1200px",
+        transformOrigin: "top center",
+      }}
+      aria-hidden="true"
+    >
+      <svg
+        viewBox="0 0 360 160"
+        className="w-full h-full drop-shadow-md"
+        preserveAspectRatio="none"
+      >
+        <polygon
+          points="0,0 360,0 180,155"
+          fill="#FAF6ED"
+          stroke="#C3A16A"
+          strokeWidth="1.5"
+          strokeOpacity="0.75"
+        />
+        <polygon
+          points="15,6 345,6 180,146"
+          fill="none"
+          stroke="#D8BD8C"
+          strokeWidth="0.8"
+          strokeDasharray="4 2"
+          strokeOpacity="0.6"
+        />
+      </svg>
+
+      {/* Wax Seal Monogram di Ujung Tutup Amplop */}
+      <div
+        className={`absolute left-1/2 -translate-x-1/2 top-[125px] z-40 transition-all ${
+          isUnfolding ? "animate-seal-burst" : ""
+        }`}
+      >
+        <div className="w-11 h-11 rounded-full bg-gradient-to-br from-amber-700 via-gold-600 to-amber-800 border-2 border-gold-300 shadow-lg flex items-center justify-center text-ivory-50 font-serif font-bold text-xs tracking-wider">
+          F &amp; I
+        </div>
+      </div>
+    </div>
+  );
+
   // If used as an embedded preview inside the admin panel
   if (isEmbedPreview) {
     return (
@@ -779,16 +843,19 @@ export function CoverScreen({
         aria-modal="true"
         aria-label="Sampul Undangan Pernikahan Fitri dan Irwan"
         className={`absolute inset-0 z-40 flex items-center justify-center bg-[#0F1015] p-0 overflow-hidden transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-          isOpen
+          isUnfolding
+            ? "opacity-0 pointer-events-none scale-105 filter blur-[2px]"
+            : isOpen
             ? "opacity-0 pointer-events-none -translate-y-full"
             : "opacity-100 pointer-events-auto translate-y-0"
         }`}
       >
         <div
           className={`w-full h-full min-h-dvh sm:min-h-0 sm:h-[min(820px,100dvh)] sm:max-w-90 sm:shadow-2xl sm:shadow-black/80 relative flex flex-col justify-between overflow-hidden transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-            isOpen ? "scale-90 opacity-0" : "scale-100 opacity-100"
+            isUnfolding ? "animate-letter-slide" : isOpen ? "scale-90 opacity-0" : "scale-100 opacity-100"
           }`}
         >
+          {envelopeFlapLayer}
           {cardContent}
         </div>
       </div>
@@ -802,16 +869,19 @@ export function CoverScreen({
       aria-modal="true"
       aria-label="Sampul Undangan Pernikahan Fitri dan Irwan"
       className={`fixed inset-0 z-50 flex items-center justify-center bg-[#0F1015] p-0 sm:py-4 overflow-hidden transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-        isOpen
+        isUnfolding
+          ? "opacity-0 pointer-events-none scale-105 filter blur-[2px]"
+          : isOpen
           ? "opacity-0 pointer-events-none -translate-y-full"
           : "opacity-100 pointer-events-auto translate-y-0"
       }`}
     >
       <div
         className={`w-full h-full min-h-dvh sm:min-h-0 sm:h-[min(820px,100dvh)] sm:max-w-90 sm:shadow-2xl sm:shadow-black/80 relative flex flex-col justify-between overflow-hidden transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-          isOpen ? "scale-90 opacity-0" : "scale-100 opacity-100"
+          isUnfolding ? "animate-letter-slide" : isOpen ? "scale-90 opacity-0" : "scale-100 opacity-100"
         }`}
       >
+        {envelopeFlapLayer}
         {cardContent}
       </div>
     </div>
