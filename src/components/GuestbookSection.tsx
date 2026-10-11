@@ -4,12 +4,134 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { getGuestbookEntries, addGuestbookEntry, isSupabaseConfigured } from "@/lib/supabase";
 import { GuestbookEntry, AttendanceStatus } from "@/types/wedding";
-import { MessageSquareHeart, Send, Loader2, Database, Sparkles, Check, Camera, X, Maximize2 } from "lucide-react";
+import {
+  MessageSquareHeart,
+  Send,
+  Loader2,
+  Database,
+  Sparkles,
+  Check,
+  Camera,
+  X,
+  Maximize2,
+  Crown,
+  Heart,
+  Briefcase,
+  GraduationCap,
+  Home,
+  UserCheck,
+  RotateCw,
+} from "lucide-react";
 import confetti from "canvas-confetti";
 import { BotanicalDivider, BotanicalFlourishCrest, FloralCardCorner } from "./BotanicalDecor";
 
 interface GuestbookSectionProps {
   initialGuestName?: string;
+}
+
+// Konfigurasi Avatar Emoji & Badge Khusus untuk Setiap Kategori Relasi
+export interface GuestCategoryMeta {
+  key: string;
+  label: string;
+  emoji: string;
+  icon: React.ComponentType<{ className?: string }>;
+  textColor: string;
+  badgeBg: string;
+  badgeBorder: string;
+  avatarBg: string;
+}
+
+export function getCategoryMeta(relationship: string): GuestCategoryMeta {
+  const rel = (relationship || "").toLowerCase();
+
+  if (rel.includes("vip")) {
+    return {
+      key: "vip",
+      label: "VIP",
+      emoji: "👑",
+      icon: Crown,
+      textColor: "text-amber-900",
+      badgeBg: "bg-amber-100/90",
+      badgeBorder: "border-amber-300",
+      avatarBg: "bg-gradient-to-br from-amber-100 via-amber-200 to-amber-300 text-amber-900 border-amber-300",
+    };
+  }
+
+  if (rel.includes("keluarga")) {
+    return {
+      key: "keluarga",
+      label: "Keluarga",
+      emoji: "🤍",
+      icon: Heart,
+      textColor: "text-rose-800",
+      badgeBg: "bg-rose-50/90",
+      badgeBorder: "border-rose-200",
+      avatarBg: "bg-gradient-to-br from-rose-100 via-rose-200 to-rose-300 text-rose-800 border-rose-200",
+    };
+  }
+
+  if (rel.includes("sahabat")) {
+    return {
+      key: "sahabat",
+      label: "Sahabat",
+      emoji: "✨",
+      icon: Sparkles,
+      textColor: "text-emerald-800",
+      badgeBg: "bg-emerald-50/90",
+      badgeBorder: "border-emerald-200",
+      avatarBg: "bg-gradient-to-br from-emerald-100 via-teal-200 to-sage-200 text-emerald-800 border-emerald-200",
+    };
+  }
+
+  if (rel.includes("kerja") || rel.includes("kantor") || rel.includes("rekan")) {
+    return {
+      key: "kerja",
+      label: "Rekan Kerja",
+      emoji: "💼",
+      icon: Briefcase,
+      textColor: "text-slate-800",
+      badgeBg: "bg-slate-50/90",
+      badgeBorder: "border-slate-200",
+      avatarBg: "bg-gradient-to-br from-slate-100 via-slate-200 to-slate-300 text-slate-800 border-slate-200",
+    };
+  }
+
+  if (rel.includes("sekolah") || rel.includes("kuliah") || rel.includes("alumni")) {
+    return {
+      key: "alumni",
+      label: "Alumni / Teman",
+      emoji: "🎓",
+      icon: GraduationCap,
+      textColor: "text-sky-800",
+      badgeBg: "bg-sky-50/90",
+      badgeBorder: "border-sky-200",
+      avatarBg: "bg-gradient-to-br from-sky-100 via-sky-200 to-sky-300 text-sky-800 border-sky-200",
+    };
+  }
+
+  if (rel.includes("tetangga")) {
+    return {
+      key: "tetangga",
+      label: "Tetangga",
+      emoji: "🕊️",
+      icon: Home,
+      textColor: "text-teal-800",
+      badgeBg: "bg-teal-50/90",
+      badgeBorder: "border-teal-200",
+      avatarBg: "bg-gradient-to-br from-teal-100 via-teal-200 to-teal-300 text-teal-800 border-teal-200",
+    };
+  }
+
+  return {
+    key: "umum",
+    label: "Tamu Undangan",
+    emoji: "🌿",
+    icon: UserCheck,
+    textColor: "text-sage-800",
+    badgeBg: "bg-sage-50/90",
+    badgeBorder: "border-sage-200",
+    avatarBg: "bg-gradient-to-br from-sage-100 via-sage-200 to-sage-300 text-sage-800 border-sage-200",
+  };
 }
 
 // Kompresi foto sisi klien (Canvas): resize ke maks 450px, kualitas 0.65 WebP/JPEG
@@ -56,7 +178,6 @@ async function compressPhotoFile(file: File): Promise<string> {
         ctx.imageSmoothingQuality = "high";
         ctx.drawImage(img, 0, 0, width, height);
 
-        // Prioritaskan WebP, fallback ke JPEG
         let dataUrl = canvas.toDataURL("image/webp", 0.65);
         if (!dataUrl.startsWith("data:image/webp")) {
           dataUrl = canvas.toDataURL("image/jpeg", 0.65);
@@ -79,7 +200,7 @@ export function GuestbookSection({ initialGuestName = "" }: GuestbookSectionProp
 
   // Form State
   const [name, setName] = useState(initialGuestName);
-  const [relationship, setRelationship] = useState("Sahabat");
+  const [relationship, setRelationship] = useState("VIP (Tamu Kehormatan)");
   const [attendance, setAttendance] = useState<AttendanceStatus>("hadir");
   const [message, setMessage] = useState("");
 
@@ -89,6 +210,9 @@ export function GuestbookSection({ initialGuestName = "" }: GuestbookSectionProp
   const [photoUploadError, setPhotoUploadError] = useState<string | null>(null);
   const [selectedPhotoModal, setSelectedPhotoModal] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  // Filter Kategori State
+  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string>("all");
 
   const refreshEntries = useCallback(async () => {
     setIsLoading(true);
@@ -295,13 +419,36 @@ export function GuestbookSection({ initialGuestName = "" }: GuestbookSectionProp
                 onChange={(e) => setRelationship(e.target.value)}
                 className="input-wedding"
               >
-                <option value="Keluarga">Keluarga</option>
-                <option value="Sahabat">Sahabat</option>
-                <option value="Teman Kerja">Teman Kerja</option>
-                <option value="Teman Sekolah / Kuliah">Teman Sekolah / Kuliah</option>
-                <option value="Tetangga">Tetangga</option>
-                <option value="Tamu Undangan">Tamu Undangan</option>
+                <option value="VIP (Tamu Kehormatan)">👑 VIP (Tamu Kehormatan)</option>
+                <option value="Keluarga">🤍 Keluarga</option>
+                <option value="Sahabat">✨ Sahabat</option>
+                <option value="Teman Kerja">💼 Teman Kerja</option>
+                <option value="Teman Sekolah / Kuliah">🎓 Teman Sekolah / Kuliah</option>
+                <option value="Tetangga">🕊️ Tetangga</option>
+                <option value="Tamu Undangan">🌿 Tamu Undangan</option>
               </select>
+
+              {/* Pratinjau Avatar Emoji Bawaan */}
+              {(() => {
+                const meta = getCategoryMeta(relationship);
+                const CategoryIcon = meta.icon;
+                return (
+                  <div className="mt-1.5 flex items-center justify-between px-3 py-1.5 rounded-xl bg-ivory-50/80 border border-ivory-200/80 text-[11px] text-sage-700">
+                    <div className="flex items-center gap-2">
+                      <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs shadow-2xs ${meta.avatarBg}`}>
+                        {meta.emoji}
+                      </div>
+                      <span>
+                        Avatar bawaan: <strong className={meta.textColor}>{meta.emoji} {meta.label}</strong>
+                      </span>
+                    </div>
+                    <span className="text-[10px] text-sage-500 flex items-center gap-1 font-medium">
+                      <CategoryIcon className="w-3 h-3 text-gold-600" />
+                      Otomatis
+                    </span>
+                  </div>
+                );
+              })()}
             </div>
 
             <div>
@@ -430,18 +577,80 @@ export function GuestbookSection({ initialGuestName = "" }: GuestbookSectionProp
 
         {/* Wishes List Column (R-27: Loading, Empty, and Populated States) */}
         <div className="w-full bg-white/90 border border-ivory-200 rounded-3xl p-5 sm:p-6 shadow-sm">
-          <div className="flex items-center justify-between pb-4 mb-4 border-b border-ivory-200">
-            <h3 className="font-serif-cormorant text-xl font-semibold text-sage-900">
-              Untaian Doa ({entries.length})
-            </h3>
+          <div className="flex items-center justify-between pb-3 mb-3 border-b border-ivory-200">
+            <div>
+              <h3 className="font-serif-cormorant text-xl font-semibold text-sage-900">
+                Untaian Doa
+              </h3>
+              <p className="text-[11px] text-sage-500">
+                {entries.length > 0 ? `${entries.length} doa restu tersimpan` : "Buku tamu doa restu"}
+              </p>
+            </div>
             <button
               type="button"
               onClick={refreshEntries}
-              className="text-xs text-sage-600 hover:text-sage-900 font-medium"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-ivory-100 hover:bg-ivory-200/80 text-xs text-sage-700 font-medium transition-colors cursor-pointer"
+              title="Segarkan daftar doa"
             >
-              Segarkan
+              <RotateCw className="w-3.5 h-3.5 text-sage-600" />
+              <span>Segarkan</span>
             </button>
           </div>
+
+          {/* Filter Kategori Tab */}
+          {entries.length > 0 && (
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-3 mb-3 scrollbar-none text-xs">
+              {[
+                { key: "all", label: "Semua", emoji: "💌", count: entries.length },
+                {
+                  key: "vip",
+                  label: "VIP",
+                  emoji: "👑",
+                  count: entries.filter((e) => getCategoryMeta(e.relationship).key === "vip").length,
+                },
+                {
+                  key: "keluarga",
+                  label: "Keluarga",
+                  emoji: "🤍",
+                  count: entries.filter((e) => getCategoryMeta(e.relationship).key === "keluarga").length,
+                },
+                {
+                  key: "sahabat",
+                  label: "Sahabat",
+                  emoji: "✨",
+                  count: entries.filter((e) => getCategoryMeta(e.relationship).key === "sahabat").length,
+                },
+                {
+                  key: "lainnya",
+                  label: "Lainnya",
+                  emoji: "🌿",
+                  count: entries.filter(
+                    (e) => !["vip", "keluarga", "sahabat"].includes(getCategoryMeta(e.relationship).key)
+                  ).length,
+                },
+              ]
+                .filter((f) => f.key === "all" || f.count > 0)
+                .map((filter) => {
+                  const isActive = selectedCategoryFilter === filter.key;
+                  return (
+                    <button
+                      key={filter.key}
+                      type="button"
+                      onClick={() => setSelectedCategoryFilter(filter.key)}
+                      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium transition-all shrink-0 cursor-pointer ${
+                        isActive
+                          ? "bg-sage-700 text-ivory-50 shadow-2xs"
+                          : "bg-ivory-100/80 text-sage-700 hover:bg-ivory-200 border border-ivory-200"
+                      }`}
+                    >
+                      <span>{filter.emoji}</span>
+                      <span>{filter.label}</span>
+                      <span className="text-[10px] opacity-80">({filter.count})</span>
+                    </button>
+                  );
+                })}
+            </div>
+          )}
 
           {isLoading ? (
             <div className="py-12 text-center text-[#556858] space-y-2">
@@ -449,73 +658,139 @@ export function GuestbookSection({ initialGuestName = "" }: GuestbookSectionProp
               <p className="text-xs">Memuat ucapan doa...</p>
             </div>
           ) : entries.length === 0 ? (
-            <div className="py-12 text-center text-[#556858] space-y-2">
-              <p className="font-serif-cormorant text-lg text-sage-900">Belum ada ucapan</p>
-              <p className="text-xs">Jadilah yang pertama memberikan doa restu untuk kedua mempelai.</p>
+            <div className="py-10 px-4 text-center space-y-2.5 bg-ivory-50/60 rounded-2xl border border-dashed border-gold-200/80">
+              <div className="w-12 h-12 rounded-full bg-gold-50 border border-gold-200 flex items-center justify-center text-2xl mx-auto shadow-2xs">
+                💌
+              </div>
+              <p className="font-serif-cormorant text-xl font-medium text-sage-900">
+                Belum Ada Ucapan Doa
+              </p>
+              <p className="text-xs text-sage-600 max-w-xs mx-auto leading-relaxed">
+                Daftar doa telah dibersihkan. Jadilah yang pertama mengirimkan untaian doa dan foto kenangan terindah untuk Fitri &amp; Irwan.
+              </p>
             </div>
           ) : (
-            <div className="space-y-4 max-h-120 overflow-y-auto pr-1">
-              {entries.map((entry) => (
-                <div
-                  key={entry.id}
-                  className="p-4 rounded-2xl bg-ivory-50 border border-ivory-200 text-left space-y-2"
-                >
-                  <div className="flex items-center justify-between gap-2 flex-wrap">
-                    <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-full bg-sage-100 text-sage-700 font-semibold text-xs flex items-center justify-center">
-                        {entry.name.charAt(0).toUpperCase()}
-                      </div>
-                      <span className="font-medium text-xs sm:text-sm text-sage-900">
-                        {entry.name}
-                      </span>
-                    </div>
+            <div className="space-y-3.5 max-h-130 overflow-y-auto pr-1">
+              {entries
+                .filter((entry) => {
+                  if (selectedCategoryFilter === "all") return true;
+                  const catKey = getCategoryMeta(entry.relationship).key;
+                  if (selectedCategoryFilter === "vip") return catKey === "vip";
+                  if (selectedCategoryFilter === "keluarga") return catKey === "keluarga";
+                  if (selectedCategoryFilter === "sahabat") return catKey === "sahabat";
+                  if (selectedCategoryFilter === "lainnya") {
+                    return !["vip", "keluarga", "sahabat"].includes(catKey);
+                  }
+                  return true;
+                })
+                .map((entry) => {
+                  const meta = getCategoryMeta(entry.relationship);
+                  const CategoryIcon = meta.icon;
 
-                    <div className="flex items-center gap-1.5 text-[11px]">
-                      <span className="px-2 py-0.5 rounded-full bg-white border border-sage-200 text-sage-600">
-                        {entry.relationship}
-                      </span>
-                      {entry.attendance === "hadir" && (
-                        <span className="px-2 py-0.5 rounded-full bg-sage-100 text-sage-700 font-medium">
-                          Hadir
-                        </span>
-                      )}
-                    </div>
-                  </div>
+                  return (
+                    <article
+                      key={entry.id}
+                      className="p-4 rounded-2xl bg-white border border-ivory-200/90 hover:border-gold-300/60 transition-all shadow-2xs space-y-2.5"
+                    >
+                      {/* Baris Atas: Avatar Emoji/Foto + Nama + Ikon Badge Kategori + Kehadiran */}
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          {/* Avatar: Default Emoji atau Foto Pengirim */}
+                          {entry.photo_url ? (
+                            <div className="relative shrink-0">
+                              <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-gold-300/80 shadow-2xs bg-white">
+                                <img
+                                  src={entry.photo_url}
+                                  alt={`Foto ${entry.name}`}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                              <span className="absolute -bottom-1 -right-1 w-4.5 h-4.5 rounded-full bg-white border border-ivory-300 shadow-2xs flex items-center justify-center text-[10px] leading-none">
+                                {meta.emoji}
+                              </span>
+                            </div>
+                          ) : (
+                            <div
+                              className={`w-10 h-10 rounded-full flex items-center justify-center text-lg shrink-0 shadow-2xs border ${meta.avatarBg}`}
+                            >
+                              {meta.emoji}
+                            </div>
+                          )}
 
-                  <p className="text-xs sm:text-sm text-sage-700 leading-relaxed pl-9">
-                    {entry.message}
-                  </p>
+                          {/* Nama & Badge Kategori (VIP Crown, Keluarga Heart, dll) */}
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <h4 className="font-semibold text-xs sm:text-sm text-sage-900 tracking-tight">
+                                {entry.name}
+                              </h4>
 
-                  {/* Foto yang dilampirkan */}
-                  {entry.photo_url && (
-                    <div className="pl-9 pt-1">
-                      <button
-                        type="button"
-                        onClick={() => setSelectedPhotoModal(entry.photo_url || null)}
-                        className="group relative block overflow-hidden rounded-xl border border-gold-200/90 shadow-2xs hover:shadow-sm transition-all max-w-45 cursor-pointer text-left focus-visible:ring-2 focus-visible:ring-gold-400"
-                        title="Ketuk untuk memperbesar foto"
-                        aria-label="Lihat foto lampiran ucapan"
-                      >
-                        <img
-                          src={entry.photo_url}
-                          alt={`Foto dari ${entry.name}`}
-                          loading="lazy"
-                          className="max-h-36 w-full object-cover rounded-xl group-hover:scale-105 transition-transform duration-300"
-                        />
-                        <div className="absolute inset-0 bg-sage-900/10 group-hover:bg-sage-900/25 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                          <span className="p-1.5 rounded-full bg-white/90 text-sage-800 shadow-xs">
-                            <Maximize2 className="w-3.5 h-3.5" />
-                          </span>
+                              {/* Ikon Kategori Khusus di Samping Nama */}
+                              <span
+                                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border ${meta.badgeBg} ${meta.badgeBorder} ${meta.textColor}`}
+                                title={`Kategori: ${meta.label}`}
+                              >
+                                <CategoryIcon className="w-3 h-3 shrink-0" />
+                                <span>{meta.label}</span>
+                              </span>
+                            </div>
+
+                            <div className="text-[10px] text-sage-500 mt-0.5">
+                              {formatTime(entry.created_at)}
+                            </div>
+                          </div>
                         </div>
-                      </button>
-                    </div>
-                  )}
 
-                  <div className="text-[10px] text-[#556858] pl-9 pt-1">
-                    {formatTime(entry.created_at)}
-                  </div>
-                </div>
-              ))}
+                        {/* Status Kehadiran Tamu */}
+                        <div className="shrink-0">
+                          {entry.attendance === "hadir" ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200/80 text-emerald-700 text-[10px] font-medium">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                              Hadir
+                            </span>
+                          ) : entry.attendance === "ragu" ? (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200/80 text-amber-700 text-[10px] font-medium">
+                              Masih Ragu
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-sage-50 border border-sage-200 text-sage-600 text-[10px] font-medium">
+                              Berhalangan
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Pesan Doa */}
+                      <p className="text-xs sm:text-sm text-sage-800 leading-relaxed pl-12.5 pr-1 font-normal whitespace-pre-wrap">
+                        {entry.message}
+                      </p>
+
+                      {/* Lampiran Foto (jika ada) */}
+                      {entry.photo_url && (
+                        <div className="pl-12.5 pt-0.5">
+                          <button
+                            type="button"
+                            onClick={() => setSelectedPhotoModal(entry.photo_url || null)}
+                            className="group relative block overflow-hidden rounded-xl border border-gold-200/90 shadow-2xs hover:shadow-sm transition-all max-w-45 cursor-pointer text-left focus-visible:ring-2 focus-visible:ring-gold-400"
+                            title="Ketuk untuk memperbesar foto"
+                            aria-label="Lihat foto lampiran ucapan"
+                          >
+                            <img
+                              src={entry.photo_url}
+                              alt={`Foto kenangan dari ${entry.name}`}
+                              loading="lazy"
+                              className="max-h-36 w-full object-cover rounded-xl group-hover:scale-105 transition-transform duration-300"
+                            />
+                            <div className="absolute inset-0 bg-sage-900/10 group-hover:bg-sage-900/25 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                              <span className="p-1.5 rounded-full bg-white/90 text-sage-800 shadow-xs">
+                                <Maximize2 className="w-3.5 h-3.5" />
+                              </span>
+                            </div>
+                          </button>
+                        </div>
+                      )}
+                    </article>
+                  );
+                })}
             </div>
           )}
         </div>

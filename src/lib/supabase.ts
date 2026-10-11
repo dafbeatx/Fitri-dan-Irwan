@@ -18,6 +18,12 @@ export const supabase = isSupabaseConfigured
 const LOCAL_STORAGE_GUESTBOOK_KEY = "fitri_irwan_guestbook_entries";
 const LOCAL_STORAGE_RSVP_KEY = "fitri_irwan_rsvp_entries";
 
+export const SEED_SAMPLE_NAMES = [
+  "Keluarga Besar Bpk. Rahmat",
+  "Dimas & Rina",
+  "Siti Nurhaliza",
+];
+
 export async function getGuestbookEntries(): Promise<{
   data: GuestbookEntry[];
   error: Error | null;
@@ -35,7 +41,13 @@ export async function getGuestbookEntries(): Promise<{
         return { data: getLocalGuestbookEntries(), error: null, source: "local" };
       }
 
-      return { data: (data as GuestbookEntry[]) || [], error: null, source: "supabase" };
+      // Filter out seed/dummy data so the live Vercel app starts completely clean
+      const rawList = (data as GuestbookEntry[]) || [];
+      const cleanData = rawList.filter(
+        (item) => !SEED_SAMPLE_NAMES.includes(item.name?.trim())
+      );
+
+      return { data: cleanData, error: null, source: "supabase" };
     } catch (err) {
       console.warn("Error connecting to Supabase:", err);
       return { data: getLocalGuestbookEntries(), error: null, source: "local" };
@@ -43,6 +55,60 @@ export async function getGuestbookEntries(): Promise<{
   }
 
   return { data: getLocalGuestbookEntries(), error: null, source: "local" };
+}
+
+export async function deleteGuestbookEntry(
+  id: string
+): Promise<{ success: boolean; error: Error | null }> {
+  if (typeof window !== "undefined") {
+    try {
+      const current = getLocalGuestbookEntries();
+      const updated = current.filter((item) => item.id !== id);
+      localStorage.setItem(LOCAL_STORAGE_GUESTBOOK_KEY, JSON.stringify(updated));
+    } catch (err) {
+      console.error("Local guestbook delete error:", err);
+    }
+  }
+
+  if (isSupabaseConfigured && supabase) {
+    try {
+      const { error } = await supabase.from("wedding_guestbook").delete().eq("id", id);
+      if (error) throw error;
+      return { success: true, error: null };
+    } catch (err: unknown) {
+      const errorObj = err instanceof Error ? err : new Error(String(err));
+      return { success: false, error: errorObj };
+    }
+  }
+  return { success: true, error: null };
+}
+
+export async function clearAllGuestbookEntries(): Promise<{
+  success: boolean;
+  error: Error | null;
+}> {
+  if (typeof window !== "undefined") {
+    try {
+      localStorage.removeItem(LOCAL_STORAGE_GUESTBOOK_KEY);
+    } catch (err) {
+      console.error("Local guestbook clear error:", err);
+    }
+  }
+
+  if (isSupabaseConfigured && supabase) {
+    try {
+      const { error } = await supabase
+        .from("wedding_guestbook")
+        .delete()
+        .neq("name", "__NONE_RECORD__");
+      if (error) throw error;
+      return { success: true, error: null };
+    } catch (err: unknown) {
+      const errorObj = err instanceof Error ? err : new Error(String(err));
+      return { success: false, error: errorObj };
+    }
+  }
+  return { success: true, error: null };
 }
 
 export async function addGuestbookEntry(
@@ -152,8 +218,11 @@ function getLocalGuestbookEntries(): GuestbookEntry[] {
     }
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
-    // Filter out previous mock init entries if any
-    const realEntries = parsed.filter((item: GuestbookEntry) => !item.id?.startsWith("init-"));
+    // Filter out previous mock init entries and seed sample names
+    const realEntries = parsed.filter(
+      (item: GuestbookEntry) =>
+        !item.id?.startsWith("init-") && !SEED_SAMPLE_NAMES.includes(item.name?.trim())
+    );
     if (realEntries.length !== parsed.length) {
       localStorage.setItem(LOCAL_STORAGE_GUESTBOOK_KEY, JSON.stringify(realEntries));
     }

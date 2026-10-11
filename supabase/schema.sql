@@ -31,6 +31,11 @@ CREATE POLICY "Public guestbook insert access"
   ON wedding_guestbook FOR INSERT
   WITH CHECK (true);
 
+-- Policy: Admin / Pengantin dapat menghapus / mereset ucapan
+CREATE POLICY "Public guestbook delete access"
+  ON wedding_guestbook FOR DELETE
+  USING (true);
+
 
 -- 2. Tabel Konfirmasi Kehadiran (RSVP)
 CREATE TABLE IF NOT EXISTS wedding_rsvp (
@@ -119,11 +124,5 @@ CREATE POLICY "Public guests delete access"
   USING (true);
 
 
--- Data Awal Contoh Ucapan Hangat (Optional)
-INSERT INTO wedding_guestbook (name, relationship, attendance, message)
-VALUES 
-  ('Keluarga Besar Bpk. Rahmat', 'Keluarga', 'hadir', 'Barakallahu lakuma wa baraka alaika wa jamaa bainakuma fii khoir. Selamat menempuh hidup baru untuk Fitri dan Irwan. Semoga senantiasa sakinah mawaddah warahmah.'),
-  ('Dimas & Rina', 'Sahabat', 'hadir', 'Selamat berbahagia sahabatku Irwan dan Fitri! Lancar sampai hari H, semoga menjadi keluarga yang bahagia selamanya.'),
-  ('Siti Nurhaliza', 'Teman Kerja', 'hadir', 'Selamat Fitri! Semoga selalu dipenuhi keberkahan dan kebahagiaan dalam membina rumah tangga baru.')
-ON CONFLICT DO NOTHING;
+-- Catatan: Tabel buku tamu dimulai dalam keadaan bersih tanpa data dummy.
 
