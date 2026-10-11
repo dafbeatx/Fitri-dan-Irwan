@@ -337,7 +337,7 @@ export function GuestbookSection({ initialGuestName = "" }: GuestbookSectionProp
 
             {/* Lampiran Foto (Dioptimalkan Otomatis) */}
             <div>
-              <label htmlFor="guest-photo-input" className="block text-xs font-semibold text-sage-900 mb-1.5 flex items-center gap-1.5">
+              <label htmlFor="guest-photo-input" className="flex items-center gap-1.5 text-xs font-semibold text-sage-900 mb-1.5">
                 <Camera className="w-3.5 h-3.5 text-gold-600" />
                 <span>Foto Bersama / Swafoto</span>
                 <span className="text-[10px] font-normal text-sage-500">(Opsional)</span>
