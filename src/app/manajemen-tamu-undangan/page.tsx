@@ -318,7 +318,7 @@ function mutateTemplates(
 // External Store: Base Domain & WhatsApp Cache Settings
 const DOMAIN_STORAGE_KEY = "fitri_irwan_custom_domain";
 const CACHE_VER_STORAGE_KEY = "fitri_irwan_wa_cache_ver";
-const DEFAULT_PRODUCTION_URL = "https://fitri-dan-irwan.vercel.app";
+const DEFAULT_PRODUCTION_URL = "https://fitri-dan-irwan-of-aurovia-creative.vercel.app";
 
 let cachedDomain: string | null = null;
 const domainListeners = new Set<() => void>();
@@ -749,53 +749,67 @@ export default function ManajemenTamuPage() {
   return (
     <div className="min-h-screen bg-[#0E1015] text-neutral-200 antialiased selection:bg-amber-500/30 pb-24 sm:pb-16">
       {/* ------------------------------------------------------------------- */}
-      {/* TOP HEADER (Mobile First Navigation) */}
+      {/* TOP HEADER (Mobile First Responsive Navigation) */}
       {/* ------------------------------------------------------------------- */}
-      <header className="sticky top-0 z-40 bg-[#14161D]/90 backdrop-blur-md border-b border-[#252834] px-4 py-3">
+      <header className="sticky top-0 z-40 bg-[#14161D]/95 backdrop-blur-md border-b border-[#252834] px-3 sm:px-4 py-2.5 sm:py-3">
         <div className="max-w-xl mx-auto flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2 min-w-0 flex-1">
             <Link
               href="/"
-              className="p-2 -ml-1 rounded-xl text-neutral-400 hover:text-white hover:bg-[#1E212B] transition-colors"
+              className="p-2 -ml-1 rounded-xl text-neutral-400 hover:text-white hover:bg-[#1E212B] transition-colors shrink-0 min-h-11 min-w-11 flex items-center justify-center"
               title="Kembali ke Undangan"
+              aria-label="Kembali ke Undangan"
             >
               <ArrowLeft className="w-5 h-5" />
             </Link>
-            <div>
+            <div className="min-w-0">
               <div className="flex items-center gap-1.5">
-                <Users className="w-4 h-4 text-amber-400" />
-                <h1 className="font-bold text-sm sm:text-base text-white leading-tight">
+                <Users className="w-4 h-4 text-amber-400 shrink-0" />
+                <h1 className="font-bold text-sm sm:text-base text-white leading-tight truncate">
                   Manajemen Tamu
                 </h1>
               </div>
-              <p className="text-[10px] sm:text-xs text-neutral-400">
-                Fitri &amp; Irwan • WhatsApp Link Generator
+              <p className="text-[10px] text-neutral-400 truncate">
+                Fitri &amp; Irwan • Link Generator
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1 shrink-0">
             <button
               type="button"
               onClick={() => {
                 setCustomDomainInput(baseUrl);
                 setIsOgSettingsModalOpen(true);
               }}
-              className="p-2 rounded-xl bg-[#1E212B] hover:bg-[#282C3A] text-emerald-300 text-xs font-semibold flex items-center gap-1.5 border border-emerald-500/20 active:scale-95 transition-all cursor-pointer"
+              className="p-2 rounded-xl bg-[#1E212B] hover:bg-[#282C3A] text-emerald-300 text-xs font-semibold flex items-center gap-1 border border-emerald-500/20 active:scale-95 transition-all cursor-pointer min-h-10 min-w-10 justify-center"
               title="Pengaturan Domain & Anti-Cache OG Image WhatsApp"
+              aria-label="Domain & Anti-Cache"
             >
               <Globe className="w-4 h-4 text-emerald-400" />
-              <span className="hidden sm:inline text-xs">Domain &amp; OG WA</span>
+              <span className="hidden md:inline text-xs">Domain &amp; OG WA</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setIsTemplateModalOpen(true)}
+              className="p-2 rounded-xl bg-[#1E212B] hover:bg-[#282C3A] text-amber-300 text-xs font-semibold flex items-center gap-1 border border-amber-500/20 active:scale-95 transition-all cursor-pointer min-h-10 min-w-10 justify-center"
+              title="Kustomisasi Template Pesan WhatsApp"
+              aria-label="Kata-Kata WA"
+            >
+              <FileText className="w-4 h-4" />
+              <span className="hidden md:inline text-xs">Kata-Kata WA</span>
             </button>
 
             <button
               type="button"
               onClick={() => setIsSqlModalOpen(true)}
-              className="p-2 rounded-xl bg-[#1E212B] hover:bg-[#282C3A] text-cyan-300 text-xs font-semibold flex items-center gap-1.5 border border-cyan-500/20 active:scale-95 transition-all cursor-pointer"
+              className="p-2 rounded-xl bg-[#1E212B] hover:bg-[#282C3A] text-cyan-300 text-xs font-semibold flex items-center gap-1 border border-cyan-500/20 active:scale-95 transition-all cursor-pointer min-h-10 min-w-10 justify-center"
               title="Skema Database Supabase & Kode SQL"
+              aria-label="SQL Supabase"
             >
               <Database className="w-4 h-4 text-cyan-400" />
-              <span className="hidden sm:inline text-xs">SQL Supabase</span>
+              <span className="hidden md:inline text-xs">SQL</span>
             </button>
 
             {isSupabaseConfigured && (
@@ -803,8 +817,9 @@ export default function ManajemenTamuPage() {
                 type="button"
                 onClick={handleManualSync}
                 disabled={isSyncing}
-                className="p-2 rounded-xl bg-[#1E212B] hover:bg-[#282C3A] text-emerald-300 text-xs font-semibold flex items-center gap-1 border border-emerald-500/20 active:scale-95 transition-all cursor-pointer disabled:opacity-50"
+                className="p-2 rounded-xl bg-[#1E212B] hover:bg-[#282C3A] text-emerald-300 text-xs font-semibold flex items-center gap-1 border border-emerald-500/20 active:scale-95 transition-all cursor-pointer disabled:opacity-50 min-h-10 min-w-10 justify-center"
                 title="Sinkronisasi Ulang Database Cloud Supabase"
+                aria-label="Sync Database"
               >
                 <RefreshCw className={`w-4 h-4 ${isSyncing ? "animate-spin text-emerald-400" : ""}`} />
               </button>
@@ -812,19 +827,10 @@ export default function ManajemenTamuPage() {
 
             <button
               type="button"
-              onClick={() => setIsTemplateModalOpen(true)}
-              className="p-2 rounded-xl bg-[#1E212B] hover:bg-[#282C3A] text-amber-300 text-xs font-semibold flex items-center gap-1.5 border border-amber-500/20 active:scale-95 transition-all cursor-pointer"
-              title="Kustomisasi Template Pesan WhatsApp"
-            >
-              <FileText className="w-4 h-4" />
-              <span className="hidden sm:inline text-xs">Kata-Kata WA</span>
-            </button>
-
-            <button
-              type="button"
               onClick={handleExportTxt}
-              className="p-2 rounded-xl bg-[#1E212B] hover:bg-[#282C3A] text-neutral-300 text-xs font-semibold flex items-center gap-1 border border-neutral-700/40 active:scale-95 transition-all cursor-pointer"
+              className="p-2 rounded-xl bg-[#1E212B] hover:bg-[#282C3A] text-neutral-300 text-xs font-semibold flex items-center gap-1 border border-neutral-700/40 active:scale-95 transition-all cursor-pointer min-h-10 min-w-10 justify-center"
               title="Unduh Daftar Tamu (TXT)"
+              aria-label="Unduh TXT"
             >
               <Download className="w-4 h-4" />
             </button>
@@ -835,12 +841,12 @@ export default function ManajemenTamuPage() {
       {/* ------------------------------------------------------------------- */}
       {/* MAIN CONTAINER (Mobile First Width Max-W-XL) */}
       {/* ------------------------------------------------------------------- */}
-      <main className="max-w-xl mx-auto px-4 py-4 space-y-4">
+      <main className="max-w-xl mx-auto px-3.5 sm:px-4 py-3 sm:py-4 space-y-3.5 sm:space-y-4 overflow-x-hidden">
         {/* STATS PROGRESS CARD */}
-        <div className="bg-linear-to-br from-[#181A22] to-[#12141A] border border-[#2B2F3D] rounded-2xl p-4 shadow-xl">
-          <div className="flex items-center justify-between mb-3">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
+        <div className="w-full bg-linear-to-br from-[#181A22] to-[#12141A] border border-[#2B2F3D] rounded-2xl p-3.5 sm:p-4 shadow-xl overflow-hidden">
+          <div className="flex items-start justify-between gap-2 mb-3">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1.5 flex-wrap mb-1.5">
                 <span className="text-[10px] uppercase font-bold tracking-wider text-amber-400">
                   Progress Pengiriman
                 </span>
@@ -861,21 +867,21 @@ export default function ManajemenTamuPage() {
                     setCustomDomainInput(baseUrl);
                     setIsOgSettingsModalOpen(true);
                   }}
-                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-cyan-500/15 border border-cyan-500/30 text-[9px] text-cyan-300 font-semibold hover:bg-cyan-500/25 transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-cyan-500/15 border border-cyan-500/30 text-[9px] text-cyan-300 font-semibold hover:bg-cyan-500/25 transition-colors cursor-pointer max-w-full"
                   title="Klik untuk konfigurasi Domain & Anti-Cache WhatsApp"
                 >
-                  <Globe className="w-2.5 h-2.5" />
-                  <span className="truncate max-w-30">{baseUrl.replace(/^https?:\/\//, "")}</span>
+                  <Globe className="w-2.5 h-2.5 shrink-0" />
+                  <span className="truncate max-w-[120px]">{baseUrl.replace(/^https?:\/\//, "")}</span>
                 </button>
               </div>
-              <h2 className="text-xl font-bold text-white flex items-baseline gap-2">
+              <h2 className="text-lg sm:text-xl font-bold text-white flex items-baseline gap-1.5 flex-wrap">
                 <span>{stats.sent}</span>
                 <span className="text-xs font-normal text-neutral-400">
                   dari {stats.total} Tamu ({stats.progress}%)
                 </span>
               </h2>
             </div>
-            <div className="w-12 h-12 rounded-full bg-amber-500/10 border-2 border-amber-500/40 flex items-center justify-center font-bold text-xs text-amber-400">
+            <div className="shrink-0 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-amber-500/10 border-2 border-amber-500/40 flex items-center justify-center font-bold text-xs text-amber-400">
               {stats.progress}%
             </div>
           </div>
@@ -888,19 +894,19 @@ export default function ManajemenTamuPage() {
             />
           </div>
 
-          {/* Quick Counter Pills */}
-          <div className="grid grid-cols-3 gap-2 text-center text-xs">
-            <div className="bg-[#1F222C] p-2 rounded-xl border border-[#2D3140]">
-              <p className="text-[10px] text-neutral-400">Total Tamu</p>
-              <p className="font-bold text-white text-sm">{stats.total}</p>
+          {/* Quick Counter Pills - Mobile Perfect Metric Grid */}
+          <div className="grid grid-cols-3 gap-1.5 sm:gap-2 text-center">
+            <div className="bg-[#1F222C] p-2 sm:p-2.5 rounded-xl border border-[#2D3140] flex flex-col items-center justify-center">
+              <span className="font-bold text-white text-base leading-none mb-1">{stats.total}</span>
+              <p className="text-[10px] text-neutral-400 leading-tight">Total Tamu</p>
             </div>
-            <div className="bg-[#1F222C] p-2 rounded-xl border border-emerald-500/30">
-              <p className="text-[10px] text-emerald-400">Sudah Terkirim</p>
-              <p className="font-bold text-emerald-400 text-sm">{stats.sent}</p>
+            <div className="bg-[#1F222C] p-2 sm:p-2.5 rounded-xl border border-emerald-500/30 flex flex-col items-center justify-center">
+              <span className="font-bold text-emerald-400 text-base leading-none mb-1">{stats.sent}</span>
+              <p className="text-[10px] text-emerald-400 leading-tight">Terkirim</p>
             </div>
-            <div className="bg-[#1F222C] p-2 rounded-xl border border-amber-500/30">
-              <p className="text-[10px] text-amber-400">Belum Terkirim</p>
-              <p className="font-bold text-amber-400 text-sm">{stats.unsent}</p>
+            <div className="bg-[#1F222C] p-2 sm:p-2.5 rounded-xl border border-amber-500/30 flex flex-col items-center justify-center">
+              <span className="font-bold text-amber-400 text-base leading-none mb-1">{stats.unsent}</span>
+              <p className="text-[10px] text-amber-400 leading-tight">Belum Kirim</p>
             </div>
           </div>
         </div>
@@ -908,19 +914,19 @@ export default function ManajemenTamuPage() {
         {/* ----------------------------------------------------------------- */}
         {/* INPUT TAMU: SATU OR MASAL (Tabs) */}
         {/* ----------------------------------------------------------------- */}
-        <div className="bg-[#181A22] border border-[#2B2F3D] rounded-2xl p-4 shadow-xl">
-          <div className="flex items-center justify-between pb-3 mb-3 border-b border-[#262936]">
+        <div className="w-full bg-[#181A22] border border-[#2B2F3D] rounded-2xl p-3.5 sm:p-4 shadow-xl overflow-hidden">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 mb-3 border-b border-[#262936]">
             <div className="flex items-center gap-2">
-              <UserPlus className="w-4 h-4 text-emerald-400" />
+              <UserPlus className="w-4 h-4 text-emerald-400 shrink-0" />
               <h3 className="font-semibold text-sm text-white">Tambah Tamu Undangan</h3>
             </div>
-            <div className="flex rounded-lg bg-[#111218] p-0.5 border border-[#282B37]">
+            <div className="flex rounded-xl bg-[#111218] p-1 border border-[#282B37] self-start sm:self-auto w-full sm:w-auto">
               <button
                 type="button"
                 onClick={() => setInputMode("single")}
-                className={`px-2.5 py-1 text-xs rounded-md font-medium transition-all cursor-pointer ${
+                className={`flex-1 sm:flex-initial px-3 py-1.5 text-xs rounded-lg font-medium transition-all cursor-pointer text-center min-h-[34px] flex items-center justify-center ${
                   inputMode === "single"
-                    ? "bg-emerald-600 text-white shadow-xs"
+                    ? "bg-emerald-600 text-white shadow-xs font-semibold"
                     : "text-neutral-400 hover:text-white"
                 }`}
               >
@@ -929,9 +935,9 @@ export default function ManajemenTamuPage() {
               <button
                 type="button"
                 onClick={() => setInputMode("bulk")}
-                className={`px-2.5 py-1 text-xs rounded-md font-medium transition-all cursor-pointer ${
+                className={`flex-1 sm:flex-initial px-3 py-1.5 text-xs rounded-lg font-medium transition-all cursor-pointer text-center min-h-[34px] flex items-center justify-center ${
                   inputMode === "bulk"
-                    ? "bg-emerald-600 text-white shadow-xs"
+                    ? "bg-emerald-600 text-white shadow-xs font-semibold"
                     : "text-neutral-400 hover:text-white"
                 }`}
               >
@@ -972,13 +978,13 @@ export default function ManajemenTamuPage() {
                           key={cat}
                           type="button"
                           onClick={() => setSingleCategory(cat)}
-                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border cursor-pointer ${
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border cursor-pointer min-h-9 ${
                             isSelected
                               ? `${meta.bgColor} ${meta.borderColor} ${meta.color} shadow-xs`
                               : "bg-[#101217] border-[#2A2D3A] text-neutral-400 hover:text-neutral-200"
                           }`}
                         >
-                          <Icon className="w-3.5 h-3.5" />
+                          <Icon className="w-3.5 h-3.5 shrink-0" />
                           <span>{meta.label}</span>
                         </button>
                       );
@@ -997,13 +1003,13 @@ export default function ManajemenTamuPage() {
                   value={singlePhone}
                   onChange={(e) => setSinglePhone(e.target.value)}
                   placeholder="08123456789 atau 628..."
-                  className="input-dark-tamu px-3 py-2 text-xs"
+                  className="input-dark-tamu px-3 py-2.5 text-xs font-mono"
                 />
               </div>
 
               <button
                 type="submit"
-                className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-950/40 flex items-center justify-center gap-2 active:scale-98 transition-all cursor-pointer"
+                className="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-950/40 flex items-center justify-center gap-2 active:scale-98 transition-all cursor-pointer min-h-11"
               >
                 <Plus className="w-4 h-4" />
                 <span>Tambahkan ke Daftar Tamu</span>
@@ -1040,13 +1046,13 @@ export default function ManajemenTamuPage() {
                           key={cat}
                           type="button"
                           onClick={() => setBulkCategory(cat)}
-                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border cursor-pointer ${
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border cursor-pointer min-h-9 ${
                             isSelected
                               ? `${meta.bgColor} ${meta.borderColor} ${meta.color} shadow-xs`
                               : "bg-[#101217] border-[#2A2D3A] text-neutral-400 hover:text-neutral-200"
                           }`}
                         >
-                          <Icon className="w-3.5 h-3.5" />
+                          <Icon className="w-3.5 h-3.5 shrink-0" />
                           <span>{meta.label}</span>
                         </button>
                       );
@@ -1058,7 +1064,7 @@ export default function ManajemenTamuPage() {
               <button
                 type="button"
                 onClick={handleAddBulk}
-                className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-950/40 flex items-center justify-center gap-2 active:scale-98 transition-all cursor-pointer"
+                className="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-950/40 flex items-center justify-center gap-2 active:scale-98 transition-all cursor-pointer min-h-11"
               >
                 <UserPlus className="w-4 h-4" />
                 <span>Impor Semua Nama di Atas</span>
@@ -1070,33 +1076,35 @@ export default function ManajemenTamuPage() {
         {/* ----------------------------------------------------------------- */}
         {/* FILTER & SEARCH BAR */}
         {/* ----------------------------------------------------------------- */}
-        <div className="space-y-2">
+        <div className="space-y-2 w-full">
           {/* Search box */}
-          <div className="relative">
+          <div className="relative w-full">
             <Search className="w-4 h-4 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Cari nama tamu undangan..."
-              className="input-dark-amber pl-9 pr-3 py-2 text-xs"
+              className="w-full input-dark-amber pl-9 pr-8 py-2.5 text-xs"
             />
             {searchQuery && (
               <button
+                type="button"
                 onClick={() => setSearchQuery("")}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-white p-1"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-white p-1 cursor-pointer"
+                aria-label="Bersihkan pencarian"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
             )}
           </div>
 
-          {/* Category Filter Pills */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+          {/* Category Filter Pills (No ugly scrollbar!) */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
             <button
               type="button"
               onClick={() => setActiveCategory("all")}
-              className={`shrink-0 px-3 py-1.5 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
+              className={`shrink-0 px-3 py-1.5 rounded-xl text-xs font-medium border transition-all cursor-pointer min-h-9 ${
                 activeCategory === "all"
                   ? "bg-white text-neutral-950 border-white font-bold"
                   : "bg-[#181A22] border-[#2A2E3B] text-neutral-400 hover:text-neutral-200"
@@ -1115,13 +1123,13 @@ export default function ManajemenTamuPage() {
                   key={cat}
                   type="button"
                   onClick={() => setActiveCategory(cat)}
-                  className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
+                  className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border transition-all cursor-pointer min-h-9 ${
                     isSelected
                       ? `${meta.bgColor} ${meta.borderColor} ${meta.color} font-bold`
                       : "bg-[#181A22] border-[#2A2E3B] text-neutral-400 hover:text-neutral-200"
                   }`}
                 >
-                  <Icon className="w-3.5 h-3.5" />
+                  <Icon className="w-3.5 h-3.5 shrink-0" />
                   <span>{meta.label}</span>
                   <span className="text-[10px] opacity-70">({count})</span>
                 </button>
@@ -1130,33 +1138,31 @@ export default function ManajemenTamuPage() {
           </div>
 
           {/* Status Filter */}
-          <div className="flex items-center justify-between text-[11px] text-neutral-400 px-1">
+          <div className="flex items-center justify-between text-[11px] text-neutral-400 px-1 gap-2 flex-wrap">
             <span>
               Menampilkan {filteredGuests.length} dari {guests.length} tamu
             </span>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() =>
-                  setStatusFilter(
-                    statusFilter === "all" ? "unsent" : statusFilter === "unsent" ? "sent" : "all"
-                  )
-                }
-                className="text-amber-400 hover:underline cursor-pointer flex items-center gap-1"
-              >
-                <Filter className="w-3 h-3" />
-                <span>
-                  Status: {statusFilter === "all" ? "Semua" : statusFilter === "unsent" ? "Belum Dikirim" : "Sudah Dikirim"}
-                </span>
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() =>
+                setStatusFilter(
+                  statusFilter === "all" ? "unsent" : statusFilter === "unsent" ? "sent" : "all"
+                )
+              }
+              className="text-amber-400 hover:underline cursor-pointer flex items-center gap-1 min-h-[30px]"
+            >
+              <Filter className="w-3 h-3" />
+              <span>
+                Status: {statusFilter === "all" ? "Semua" : statusFilter === "unsent" ? "Belum Dikirim" : "Sudah Dikirim"}
+              </span>
+            </button>
           </div>
         </div>
 
         {/* ----------------------------------------------------------------- */}
-        {/* GUEST LIST CARDS (Mobile First Action Card) */}
+        {/* GUEST LIST CARDS (Mobile First Action Card Architecture) */}
         {/* ----------------------------------------------------------------- */}
-        <div className="space-y-2.5">
+        <div className="space-y-3 w-full">
           {filteredGuests.length === 0 ? (
             <div className="text-center py-12 px-4 bg-[#14161D] border border-dashed border-[#2B2F3D] rounded-2xl text-neutral-400">
               <Users className="w-8 h-8 mx-auto text-neutral-600 mb-2" />
@@ -1174,63 +1180,65 @@ export default function ManajemenTamuPage() {
               return (
                 <div
                   key={guest.id}
-                  className={`bg-[#181A22] border rounded-2xl p-3.5 shadow-md transition-all ${
-                    guest.isSent ? "border-emerald-500/30 opacity-90" : "border-[#2D313F]"
+                  className={`w-full bg-[#181A22] border rounded-2xl p-3.5 sm:p-4 shadow-lg transition-all overflow-hidden ${
+                    guest.isSent ? "border-emerald-500/35 bg-linear-to-b from-[#181A22] to-[#121A16]" : "border-[#2D313F]"
                   }`}
                 >
-                  {/* Header Card: Name & Badges */}
-                  <div className="flex items-start justify-between gap-2 mb-2.5">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <span
-                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] ${meta.badgeColor}`}
-                        >
-                          <Icon className="w-3 h-3" />
-                          <span>{meta.label}</span>
+                  {/* Header Card: Badges & Checkbox Toggle */}
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+                      <span
+                        className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold ${meta.badgeColor}`}
+                      >
+                        <Icon className="w-3 h-3 shrink-0" />
+                        <span>{meta.label}</span>
+                      </span>
+
+                      {guest.isSent ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-medium">
+                          <CheckCircle2 className="w-3 h-3 shrink-0" />
+                          <span>Terkirim {guest.sentAt ? `(${guest.sentAt})` : ""}</span>
                         </span>
-
-                        {guest.isSent ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-medium">
-                            <CheckCircle2 className="w-3 h-3" />
-                            <span>Terkirim</span>
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] bg-amber-500/10 text-amber-300 border border-amber-500/25">
-                            <Clock className="w-3 h-3" />
-                            <span>Belum Dikirim</span>
-                          </span>
-                        )}
-                      </div>
-
-                      <h4 className="font-bold text-white text-sm sm:text-base leading-snug truncate">
-                        {guest.name}
-                      </h4>
-
-                      {guest.phone && (
-                        <p className="text-[11px] text-neutral-400 font-mono mt-0.5">
-                          WA: {guest.phone}
-                        </p>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] bg-amber-500/10 text-amber-300 border border-amber-500/25 font-medium">
+                          <Clock className="w-3 h-3 shrink-0" />
+                          <span>Belum Dikirim</span>
+                        </span>
                       )}
                     </div>
 
-                    {/* Checkbox toggle status */}
+                    {/* Checkbox toggle status - 44px min touch target */}
                     <button
                       type="button"
                       onClick={() => handleToggleSent(guest.id)}
-                      className={`p-1.5 rounded-xl border transition-all cursor-pointer ${
+                      className={`shrink-0 p-2 rounded-xl border transition-all cursor-pointer min-h-11 min-w-11 flex items-center justify-center ${
                         guest.isSent
-                          ? "bg-emerald-500/20 border-emerald-500/50 text-emerald-400"
-                          : "bg-[#111218] border-[#2C2F3E] text-neutral-500 hover:text-white"
+                          ? "bg-emerald-500/25 border-emerald-500/60 text-emerald-300 shadow-xs"
+                          : "bg-[#111218] border-[#2C2F3E] text-neutral-400 hover:text-white hover:border-neutral-500"
                       }`}
                       title={guest.isSent ? "Tandai belum dikirim" : "Tandai sudah dikirim"}
+                      aria-label={guest.isSent ? `Tandai ${guest.name} belum dikirim` : `Tandai ${guest.name} sudah dikirim`}
                     >
-                      <Check className="w-4 h-4" />
+                      <Check className={`w-4 h-4 ${guest.isSent ? "text-emerald-400 stroke-[3]" : ""}`} />
                     </button>
                   </div>
 
-                  {/* ACTION BUTTONS (The core requirement: Tinggal Klik Bagikan) */}
-                  <div className="grid grid-cols-4 gap-1.5 pt-2 border-t border-[#252835]">
-                    {/* Primary Button: Bagikan via WhatsApp (Native link guarantees popup blocker never blocks) */}
+                  {/* Guest Name & Phone */}
+                  <div className="mb-3">
+                    <h4 className="font-bold text-white text-sm sm:text-base leading-snug break-words">
+                      {guest.name}
+                    </h4>
+                    {guest.phone && (
+                      <div className="flex items-center gap-1.5 text-[11px] text-neutral-400 font-mono mt-1">
+                        <MessageCircle className="w-3 h-3 text-emerald-400 shrink-0" />
+                        <span>{guest.phone}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* ACTION BUTTONS (Reflowed with Intent for Mobile Perfection) */}
+                  <div className="space-y-2 pt-2.5 border-t border-[#252835]">
+                    {/* Primary Button: Kirim WhatsApp Langsung (Full width, bold, impossible to clip) */}
                     <a
                       href={getWhatsAppUrl(guest)}
                       target="_blank"
@@ -1241,63 +1249,64 @@ export default function ManajemenTamuPage() {
                         }
                         showToast(`✓ Membuka WhatsApp untuk ${guest.name}`);
                       }}
-                      className="col-span-2 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition-all cursor-pointer no-underline"
+                      className="w-full py-2.5 px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-[0.98] text-white text-xs font-bold flex items-center justify-center gap-2 shadow-md shadow-emerald-950/40 transition-all cursor-pointer no-underline min-h-11"
                       title="Kirim undangan langsung via WhatsApp"
                     >
                       <MessageCircle className="w-4 h-4 fill-white shrink-0" />
-                      <span>Kirim WhatsApp</span>
+                      <span>Kirim WhatsApp Sekarang</span>
                     </a>
 
-                    {/* Copy Full Message */}
-                    <button
-                      type="button"
-                      onClick={() => handleCopyMessage(guest)}
-                      className="py-2 px-2 rounded-xl bg-[#222530] hover:bg-[#2C3040] text-neutral-200 text-xs font-semibold flex items-center justify-center gap-1 border border-[#34384A] active:scale-95 transition-all cursor-pointer"
-                      title="Salin kata-kata WhatsApp lengkap beserta link"
-                    >
-                      <Copy className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                      <span>Salin Pesan</span>
-                    </button>
+                    {/* Secondary Actions: 2 Equal Columns */}
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleCopyMessage(guest)}
+                        className="w-full py-2 px-2.5 rounded-xl bg-[#222530] hover:bg-[#2C3040] text-neutral-200 text-xs font-semibold flex items-center justify-center gap-1.5 border border-[#34384A] active:scale-95 transition-all cursor-pointer min-h-10 truncate"
+                        title="Salin kata-kata WhatsApp lengkap beserta link"
+                      >
+                        <Copy className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                        <span className="truncate">Salin Pesan WA</span>
+                      </button>
 
-                    {/* Quick Preview Link */}
-                    <a
-                      href={guestUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="py-2 px-2 rounded-xl bg-[#222530] hover:bg-[#2C3040] text-neutral-200 text-xs font-semibold flex items-center justify-center gap-1 border border-[#34384A] active:scale-95 transition-all"
-                      title="Buka tampilan undangan persis seperti yang akan dilihat tamu"
-                    >
-                      <Eye className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
-                      <span>Lihat</span>
-                    </a>
-                  </div>
+                      <a
+                        href={guestUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full py-2 px-2.5 rounded-xl bg-[#222530] hover:bg-[#2C3040] text-neutral-200 text-xs font-semibold flex items-center justify-center gap-1.5 border border-[#34384A] active:scale-95 transition-all min-h-10 truncate"
+                        title="Buka tampilan undangan persis seperti yang akan dilihat tamu"
+                      >
+                        <Eye className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                        <span className="truncate">Buka Undangan</span>
+                      </a>
+                    </div>
 
-                  {/* Secondary subtle actions: Copy link & Delete */}
-                  <div className="flex items-center justify-between text-[11px] text-neutral-500 mt-2 pt-1.5 border-t border-[#20232E]">
-                    <button
-                      type="button"
-                      onClick={() => handleCopyLink(guest)}
-                      className="hover:text-amber-300 flex items-center gap-1 transition-colors cursor-pointer"
-                    >
-                      <span>Salin URL Link</span>
-                    </button>
+                    {/* Tertiary Actions: Subtle Options Strip */}
+                    <div className="flex items-center justify-between text-[11px] text-neutral-400 pt-1.5 border-t border-[#20232E] gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleCopyLink(guest)}
+                        className="hover:text-amber-300 flex items-center gap-1 transition-colors cursor-pointer py-1.5 min-h-[36px]"
+                      >
+                        <span>Salin Link Saja</span>
+                      </button>
 
-                    <button
-                      type="button"
-                      onClick={() => setPreviewGuest(guest)}
-                      className="hover:text-cyan-300 flex items-center gap-1 transition-colors cursor-pointer"
-                    >
-                      <span>Pratinjau Teks</span>
-                    </button>
+                      <button
+                        type="button"
+                        onClick={() => setPreviewGuest(guest)}
+                        className="hover:text-cyan-300 flex items-center gap-1 transition-colors cursor-pointer py-1.5 min-h-[36px]"
+                      >
+                        <span>Pratinjau Teks</span>
+                      </button>
 
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteGuest(guest.id, guest.name)}
-                      className="hover:text-rose-400 flex items-center gap-1 transition-colors cursor-pointer"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                      <span>Hapus</span>
-                    </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteGuest(guest.id, guest.name)}
+                        className="hover:text-rose-400 text-neutral-500 flex items-center gap-1 transition-colors cursor-pointer py-1.5 min-h-[36px]"
+                      >
+                        <Trash2 className="w-3.5 h-3.5 text-rose-500/80" />
+                        <span>Hapus</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               );
@@ -1306,27 +1315,27 @@ export default function ManajemenTamuPage() {
         </div>
 
         {/* BOTTOM HELPER */}
-        <div className="pt-4 flex flex-wrap items-center justify-between gap-3 text-xs text-neutral-500">
+        <div className="pt-4 pb-2 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-neutral-500 text-center sm:text-left">
           <button
             type="button"
             onClick={handleClearAllGuests}
-            className="hover:text-rose-400 text-neutral-400 flex items-center gap-1.5 cursor-pointer transition-colors"
+            className="hover:text-rose-400 text-neutral-400 flex items-center gap-1.5 cursor-pointer transition-colors py-2 min-h-11"
           >
             <Trash2 className="w-3.5 h-3.5 text-rose-500/80" />
             <span>Kosongkan Semua Data</span>
           </button>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap justify-center">
             <button
               type="button"
               onClick={() => setIsSqlModalOpen(true)}
-              className="text-cyan-400 hover:text-cyan-300 flex items-center gap-1 cursor-pointer transition-colors"
+              className="text-cyan-400 hover:text-cyan-300 flex items-center gap-1 cursor-pointer transition-colors py-2 min-h-11"
             >
               <Database className="w-3.5 h-3.5" />
               <span>Lihat SQL Supabase</span>
             </button>
             <span className="text-neutral-700">•</span>
-            <Link href="/admin" className="text-amber-400 hover:underline">
+            <Link href="/admin" className="text-amber-400 hover:underline py-2 min-h-11 inline-flex items-center">
               Buka Canva Studio &rarr;
             </Link>
           </div>
@@ -1363,7 +1372,7 @@ export default function ManajemenTamuPage() {
               {getFormattedMessage(previewGuest)}
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col sm:flex-row items-center gap-2">
               <a
                 href={previewGuest ? getWhatsAppUrl(previewGuest) : "#"}
                 target="_blank"
@@ -1379,7 +1388,7 @@ export default function ManajemenTamuPage() {
                   showToast(`✓ Membuka WhatsApp untuk ${previewGuest.name}`);
                   setPreviewGuest(null);
                 }}
-                className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition-all no-underline text-center cursor-pointer"
+                className="w-full sm:flex-1 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition-all no-underline text-center cursor-pointer min-h-11"
               >
                 <MessageCircle className="w-4 h-4 fill-white" />
                 <span>Kirim ke WhatsApp Sekarang</span>
@@ -1391,10 +1400,10 @@ export default function ManajemenTamuPage() {
                   handleCopyMessage(previewGuest);
                   setPreviewGuest(null);
                 }}
-                className="py-2.5 px-4 rounded-xl bg-[#222530] hover:bg-[#2C3040] text-neutral-200 text-xs font-semibold flex items-center justify-center gap-1.5"
+                className="w-full sm:w-auto py-3 px-5 rounded-xl bg-[#222530] hover:bg-[#2C3040] text-neutral-200 text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer min-h-11 active:scale-95 transition-all border border-[#34384A]"
               >
                 <Copy className="w-4 h-4 text-amber-400" />
-                <span>Salin</span>
+                <span>Salin Pesan</span>
               </button>
             </div>
           </div>
@@ -1710,12 +1719,12 @@ CREATE POLICY "Public guests delete access"
               <p className="text-[11px] text-neutral-400 leading-relaxed">
                 WhatsApp hanya dapat mengunduh foto pratinjau dari domain publik online. Saat menguji di localhost, link otomatis diarahkan ke domain produksi Vercel.
               </p>
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <input
                   type="url"
                   value={customDomainInput}
                   onChange={(e) => setCustomDomainInput(e.target.value)}
-                  placeholder="https://fitri-dan-irwan.vercel.app"
+                  placeholder="https://fitri-dan-irwan-of-aurovia-creative.vercel.app"
                   className="flex-1 input-dark-tamu px-3 py-2 text-xs font-mono"
                 />
                 <button
@@ -1729,7 +1738,7 @@ CREATE POLICY "Public guests delete access"
                     setCustomDomainInput(cleaned);
                     showToast("✓ Domain link undangan disimpan!");
                   }}
-                  className="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-xl transition-all cursor-pointer shadow-sm active:scale-95"
+                  className="w-full sm:w-auto px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-xl transition-all cursor-pointer shadow-sm active:scale-95 min-h-10 flex items-center justify-center"
                 >
                   Simpan
                 </button>
