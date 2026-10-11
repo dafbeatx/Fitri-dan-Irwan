@@ -503,7 +503,7 @@ export function GuestbookSection({ initialGuestName = "" }: GuestbookSectionProp
                       <button
                         type="button"
                         onClick={() => setSelectedPhotoModal(entry.photo_url || null)}
-                        className="group relative block overflow-hidden rounded-xl border border-gold-200/90 shadow-2xs hover:shadow-sm transition-all max-w-[180px] cursor-pointer text-left focus-visible:ring-2 focus-visible:ring-gold-400"
+                        className="group relative block overflow-hidden rounded-xl border border-gold-200/90 shadow-2xs hover:shadow-sm transition-all max-w-45 cursor-pointer text-left focus-visible:ring-2 focus-visible:ring-gold-400"
                         title="Ketuk untuk memperbesar foto"
                         aria-label="Lihat foto lampiran ucapan"
                       >
