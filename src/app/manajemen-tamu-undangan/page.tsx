@@ -871,7 +871,7 @@ export default function ManajemenTamuPage() {
                   title="Klik untuk konfigurasi Domain & Anti-Cache WhatsApp"
                 >
                   <Globe className="w-2.5 h-2.5 shrink-0" />
-                  <span className="truncate max-w-[120px]">{baseUrl.replace(/^https?:\/\//, "")}</span>
+                  <span className="truncate max-w-30">{baseUrl.replace(/^https?:\/\//, "")}</span>
                 </button>
               </div>
               <h2 className="text-lg sm:text-xl font-bold text-white flex items-baseline gap-1.5 flex-wrap">
@@ -924,7 +924,7 @@ export default function ManajemenTamuPage() {
               <button
                 type="button"
                 onClick={() => setInputMode("single")}
-                className={`flex-1 sm:flex-initial px-3 py-1.5 text-xs rounded-lg font-medium transition-all cursor-pointer text-center min-h-[34px] flex items-center justify-center ${
+                className={`flex-1 sm:flex-initial px-3 py-1.5 text-xs rounded-lg font-medium transition-all cursor-pointer text-center min-h-8.5 flex items-center justify-center ${
                   inputMode === "single"
                     ? "bg-emerald-600 text-white shadow-xs font-semibold"
                     : "text-neutral-400 hover:text-white"
@@ -935,7 +935,7 @@ export default function ManajemenTamuPage() {
               <button
                 type="button"
                 onClick={() => setInputMode("bulk")}
-                className={`flex-1 sm:flex-initial px-3 py-1.5 text-xs rounded-lg font-medium transition-all cursor-pointer text-center min-h-[34px] flex items-center justify-center ${
+                className={`flex-1 sm:flex-initial px-3 py-1.5 text-xs rounded-lg font-medium transition-all cursor-pointer text-center min-h-8.5 flex items-center justify-center ${
                   inputMode === "bulk"
                     ? "bg-emerald-600 text-white shadow-xs font-semibold"
                     : "text-neutral-400 hover:text-white"
@@ -1100,7 +1100,7 @@ export default function ManajemenTamuPage() {
           </div>
 
           {/* Category Filter Pills (No ugly scrollbar!) */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
             <button
               type="button"
               onClick={() => setActiveCategory("all")}
@@ -1149,7 +1149,7 @@ export default function ManajemenTamuPage() {
                   statusFilter === "all" ? "unsent" : statusFilter === "unsent" ? "sent" : "all"
                 )
               }
-              className="text-amber-400 hover:underline cursor-pointer flex items-center gap-1 min-h-[30px]"
+              className="text-amber-400 hover:underline cursor-pointer flex items-center gap-1 min-h-7.5"
             >
               <Filter className="w-3 h-3" />
               <span>
@@ -1219,13 +1219,13 @@ export default function ManajemenTamuPage() {
                       title={guest.isSent ? "Tandai belum dikirim" : "Tandai sudah dikirim"}
                       aria-label={guest.isSent ? `Tandai ${guest.name} belum dikirim` : `Tandai ${guest.name} sudah dikirim`}
                     >
-                      <Check className={`w-4 h-4 ${guest.isSent ? "text-emerald-400 stroke-[3]" : ""}`} />
+                      <Check className={`w-4 h-4 ${guest.isSent ? "text-emerald-400 stroke-3" : ""}`} />
                     </button>
                   </div>
 
                   {/* Guest Name & Phone */}
                   <div className="mb-3">
-                    <h4 className="font-bold text-white text-sm sm:text-base leading-snug break-words">
+                    <h4 className="font-bold text-white text-sm sm:text-base leading-snug wrap-break-word">
                       {guest.name}
                     </h4>
                     {guest.phone && (
@@ -1285,7 +1285,7 @@ export default function ManajemenTamuPage() {
                       <button
                         type="button"
                         onClick={() => handleCopyLink(guest)}
-                        className="hover:text-amber-300 flex items-center gap-1 transition-colors cursor-pointer py-1.5 min-h-[36px]"
+                        className="hover:text-amber-300 flex items-center gap-1 transition-colors cursor-pointer py-1.5 min-h-9"
                       >
                         <span>Salin Link Saja</span>
                       </button>
@@ -1293,7 +1293,7 @@ export default function ManajemenTamuPage() {
                       <button
                         type="button"
                         onClick={() => setPreviewGuest(guest)}
-                        className="hover:text-cyan-300 flex items-center gap-1 transition-colors cursor-pointer py-1.5 min-h-[36px]"
+                        className="hover:text-cyan-300 flex items-center gap-1 transition-colors cursor-pointer py-1.5 min-h-9"
                       >
                         <span>Pratinjau Teks</span>
                       </button>
@@ -1301,7 +1301,7 @@ export default function ManajemenTamuPage() {
                       <button
                         type="button"
                         onClick={() => handleDeleteGuest(guest.id, guest.name)}
-                        className="hover:text-rose-400 text-neutral-500 flex items-center gap-1 transition-colors cursor-pointer py-1.5 min-h-[36px]"
+                        className="hover:text-rose-400 text-neutral-500 flex items-center gap-1 transition-colors cursor-pointer py-1.5 min-h-9"
                       >
                         <Trash2 className="w-3.5 h-3.5 text-rose-500/80" />
                         <span>Hapus</span>
