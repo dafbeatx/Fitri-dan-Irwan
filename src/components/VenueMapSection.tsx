@@ -1,4 +1,3 @@
-import React from "react";
 import { weddingData } from "@/config/wedding-data";
 import { Navigation, ExternalLink } from "lucide-react";
 import { BotanicalDivider, BotanicalFlourishCrest, FloralCardCorner } from "./BotanicalDecor";

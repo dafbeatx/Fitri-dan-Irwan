@@ -1,4 +1,3 @@
-import React from "react";
 import { Calendar, MapPin } from "lucide-react";
 import { BotanicalCornerAuthentic, BotanicalFlourishCrest, FloralCardCorner } from "./BotanicalDecor";
 import { weddingData } from "@/config/wedding-data";

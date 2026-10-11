@@ -957,7 +957,7 @@ export function GuestbookSection({ initialGuestName = "" }: GuestbookSectionProp
                       type="button"
                       onClick={() => handlePageChange(validPage - 1)}
                       disabled={validPage === 1}
-                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold bg-ivory-100 hover:bg-ivory-200 text-sage-800 disabled:opacity-35 disabled:hover:bg-ivory-100 disabled:cursor-not-allowed transition-all cursor-pointer min-h-8 border border-ivory-200/90 shadow-2xs active:scale-95"
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold bg-ivory-100 enabled:hover:bg-ivory-200 text-sage-800 disabled:opacity-35 disabled:cursor-not-allowed transition-all enabled:cursor-pointer min-h-8 border border-ivory-200/90 shadow-2xs enabled:active:scale-95"
                       aria-label="Halaman doa sebelumnya"
                     >
                       <ChevronLeft className="w-3.5 h-3.5 shrink-0" />
@@ -1006,7 +1006,7 @@ export function GuestbookSection({ initialGuestName = "" }: GuestbookSectionProp
                       type="button"
                       onClick={() => handlePageChange(validPage + 1)}
                       disabled={validPage === totalPages}
-                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold bg-sage-700 hover:bg-sage-800 text-ivory-50 disabled:bg-ivory-100 disabled:text-sage-400 disabled:opacity-35 disabled:hover:bg-ivory-100 disabled:cursor-not-allowed transition-all cursor-pointer min-h-8 shadow-2xs active:scale-95"
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold enabled:bg-sage-700 enabled:hover:bg-sage-800 text-ivory-50 disabled:bg-ivory-100 disabled:text-sage-400 disabled:opacity-35 disabled:cursor-not-allowed transition-all enabled:cursor-pointer min-h-8 shadow-2xs enabled:active:scale-95"
                       aria-label="Halaman doa berikutnya"
                     >
                       <span>Berikutnya</span>

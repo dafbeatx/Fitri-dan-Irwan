@@ -354,7 +354,7 @@ export function CoverScreen({
           onUpdateHref={(val) => onUpdateHref?.("title", val)}
           onSelect={onSelectElement || (() => {})}
           onUpdateTransform={onUpdateTransform}
-          onUpdateText={(field, val) => onUpdateText?.("titleText", val)}
+          onUpdateText={(_, val) => onUpdateText?.("titleText", val)}
           onToggleLock={onToggleLock}
           className="block mx-auto text-center"
         >
@@ -590,7 +590,7 @@ export function CoverScreen({
           onUpdateHref={(val) => onUpdateHref?.("guestName", val)}
           onSelect={onSelectElement || (() => {})}
           onUpdateTransform={onUpdateTransform}
-          onUpdateText={(field, val) => onUpdateText?.("guestName", val)}
+          onUpdateText={(_, val) => onUpdateText?.("guestName", val)}
           onToggleLock={onToggleLock}
           className="block w-full text-center mx-auto mb-3 sm:mb-3.5 px-2"
         >
@@ -629,7 +629,7 @@ export function CoverScreen({
           onUpdateHref={(val) => onUpdateHref?.("button", val)}
           onSelect={onSelectElement || (() => {})}
           onUpdateTransform={onUpdateTransform}
-          onUpdateText={(field, val) => onUpdateText?.("buttonText", val)}
+          onUpdateText={(_, val) => onUpdateText?.("buttonText", val)}
           onToggleLock={onToggleLock}
           className="block mb-2 sm:mb-2.5"
         >
@@ -665,7 +665,7 @@ export function CoverScreen({
           onUpdateHref={(val) => onUpdateHref?.("closingNote", val)}
           onSelect={onSelectElement || (() => {})}
           onUpdateTransform={onUpdateTransform}
-          onUpdateText={(field, val) => onUpdateText?.("closingNote", val)}
+          onUpdateText={(_, val) => onUpdateText?.("closingNote", val)}
           onToggleLock={onToggleLock}
           className="block mt-0.5"
         >

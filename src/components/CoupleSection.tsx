@@ -1,4 +1,3 @@
-import React from "react";
 import Image from "next/image";
 import { weddingData } from "@/config/wedding-data";
 import { Heart } from "lucide-react";

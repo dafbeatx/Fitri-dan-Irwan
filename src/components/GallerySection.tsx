@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { weddingData } from "@/config/wedding-data";
 import { X, ChevronLeft, ChevronRight, Image as ImageIcon, Camera } from "lucide-react";

@@ -1,4 +1,3 @@
-import React from "react";
 
 /**
  * Bespoke Botanical & Floral Elements for Fitri & Irwan Wedding Invitation

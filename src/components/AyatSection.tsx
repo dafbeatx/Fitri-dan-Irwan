@@ -1,4 +1,3 @@
-import React from "react";
 import { weddingData } from "@/config/wedding-data";
 import { BismillahCalligraphy, BotanicalDivider, BotanicalFlourishCrest, FloralCardCorner } from "./BotanicalDecor";
 

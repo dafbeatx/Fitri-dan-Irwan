@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import { weddingData } from "@/config/wedding-data";
 import { Gift, Copy, Check, QrCode, MessageCircle, X } from "lucide-react";

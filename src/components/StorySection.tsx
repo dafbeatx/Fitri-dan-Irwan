@@ -1,4 +1,3 @@
-import React from "react";
 import { weddingData } from "@/config/wedding-data";
 import { BookHeart, CalendarHeart } from "lucide-react";
 import { BotanicalDivider } from "./BotanicalDecor";

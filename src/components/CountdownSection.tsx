@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { weddingData } from "@/config/wedding-data";
 import { CalendarPlus, Clock } from "lucide-react";
 

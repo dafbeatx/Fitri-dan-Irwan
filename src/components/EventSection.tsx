@@ -1,4 +1,3 @@
-import React from "react";
 import { weddingData } from "@/config/wedding-data";
 import { Calendar, Clock, MapPin, Sparkles } from "lucide-react";
 import { CountdownSection } from "./CountdownSection";

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { memo } from "react";
+import { memo } from "react";
 
 // Predefined deterministic particles to eliminate any SSR hydration mismatches
 const STARDUST_PARTICLES = [
