@@ -815,11 +815,11 @@ export function CoverScreen({
 
       {/* Wax Seal Monogram di Ujung Tutup Amplop */}
       <div
-        className={`absolute left-1/2 -translate-x-1/2 top-[125px] z-40 transition-all ${
+        className={`absolute left-1/2 -translate-x-1/2 top-31.25 z-40 transition-all ${
           isUnfolding ? "animate-seal-burst" : ""
         }`}
       >
-        <div className="w-11 h-11 rounded-full bg-gradient-to-br from-amber-700 via-gold-600 to-amber-800 border-2 border-gold-300 shadow-lg flex items-center justify-center text-ivory-50 font-serif font-bold text-xs tracking-wider">
+        <div className="w-11 h-11 rounded-full bg-linear-to-br from-amber-700 via-gold-600 to-amber-800 border-2 border-gold-300 shadow-lg flex items-center justify-center text-ivory-50 font-serif font-bold text-xs tracking-wider">
           F &amp; I
         </div>
       </div>

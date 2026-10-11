@@ -39,7 +39,7 @@ export function HeroSection({ guestName }: HeroSectionProps) {
       />
 
       {/* 2. Architectural Arch Framing with Fine Art Stationery Feel */}
-      <div className="relative w-full max-w-xs mx-auto border border-gold-300/60 outline outline-1 outline-gold-200/50 outline-offset-3 rounded-4xl p-6 sm:p-7 bg-white/90 shadow-md backdrop-blur-xs">
+      <div className="relative w-full max-w-xs mx-auto border border-gold-300/60 outline outline-gold-200/50 outline-offset-3 rounded-4xl p-6 sm:p-7 bg-white/90 shadow-md backdrop-blur-xs">
         {/* Delicate Eyebrow Heading with Hairline Accents */}
         <div className="flex items-center justify-center gap-2 mb-4">
           <span className="w-5 h-px bg-gold-400/60" />
@@ -88,7 +88,7 @@ export function HeroSection({ guestName }: HeroSectionProps) {
         {/* Personalized Guest Badge with Floral Accents (Letter Pass) */}
         {guestName && (
           <div className="pt-2 w-full mx-auto">
-            <div className="relative px-5 py-3 rounded-2xl bg-gradient-to-b from-white to-ivory-50/90 border border-gold-300/70 shadow-xs overflow-hidden">
+            <div className="relative px-5 py-3 rounded-2xl bg-linear-to-b from-white to-ivory-50/90 border border-gold-300/70 shadow-xs overflow-hidden">
               <FloralCardCorner position="top-right" size={34} className="absolute top-0 right-0 opacity-80" />
               <FloralCardCorner position="bottom-left" size={34} className="absolute bottom-0 left-0 opacity-80" />
               <p className="text-[9px] sm:text-[10px] text-gold-700 uppercase tracking-[0.25em] font-medium">
