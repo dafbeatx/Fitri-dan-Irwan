@@ -842,71 +842,109 @@ export default function ManajemenTamuPage() {
       {/* MAIN CONTAINER (Mobile First Width Max-W-XL) */}
       {/* ------------------------------------------------------------------- */}
       <main className="max-w-xl mx-auto px-3.5 sm:px-4 py-3 sm:py-4 space-y-3.5 sm:space-y-4 overflow-x-hidden">
-        {/* STATS PROGRESS CARD */}
-        <div className="w-full bg-linear-to-br from-[#181A22] to-[#12141A] border border-[#2B2F3D] rounded-2xl p-3.5 sm:p-4 shadow-xl overflow-hidden">
-          <div className="flex items-start justify-between gap-2 mb-3">
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-1.5 flex-wrap mb-1.5">
-                <span className="text-[10px] uppercase font-bold tracking-wider text-amber-400">
-                  Progress Pengiriman
-                </span>
-                {isSupabaseConfigured ? (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-[9px] text-emerald-400 font-semibold">
-                    <Cloud className="w-2.5 h-2.5" />
-                    <span>Cloud Supabase</span>
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-[9px] text-amber-300 font-semibold">
-                    <Database className="w-2.5 h-2.5" />
-                    <span>Lokal Offline</span>
-                  </span>
-                )}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setCustomDomainInput(baseUrl);
-                    setIsOgSettingsModalOpen(true);
-                  }}
-                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-cyan-500/15 border border-cyan-500/30 text-[9px] text-cyan-300 font-semibold hover:bg-cyan-500/25 transition-colors cursor-pointer max-w-full"
-                  title="Klik untuk konfigurasi Domain & Anti-Cache WhatsApp"
-                >
-                  <Globe className="w-2.5 h-2.5 shrink-0" />
-                  <span className="truncate max-w-30">{baseUrl.replace(/^https?:\/\//, "")}</span>
-                </button>
-              </div>
-              <h2 className="text-lg sm:text-xl font-bold text-white flex items-baseline gap-1.5 flex-wrap">
-                <span>{stats.sent}</span>
-                <span className="text-xs font-normal text-neutral-400">
-                  dari {stats.total} Tamu ({stats.progress}%)
-                </span>
-              </h2>
+        {/* STATS PROGRESS CARD - High Contrast & Crystal Clear UI */}
+        <div className="w-full bg-[#151824] border-2 border-[#2D3348] rounded-2xl p-4 sm:p-5 shadow-2xl overflow-hidden">
+          {/* Top Row: Title & Status Badges */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3 border-b border-[#252B3E]">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-amber-400 shadow-xs shadow-amber-400/50" />
+              <span className="text-xs uppercase font-extrabold tracking-wider text-amber-400">
+                Status Pengiriman Undangan
+              </span>
             </div>
-            <div className="shrink-0 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-amber-500/10 border-2 border-amber-500/40 flex items-center justify-center font-bold text-xs text-amber-400">
-              {stats.progress}%
+
+            <div className="flex items-center gap-2 flex-wrap">
+              {isSupabaseConfigured ? (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-[11px] text-emerald-300 font-bold">
+                  <Cloud className="w-3 h-3 text-emerald-400 shrink-0" />
+                  <span>Cloud Database</span>
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/20 border border-amber-400/40 text-[11px] text-amber-300 font-bold">
+                  <Database className="w-3 h-3 text-amber-400 shrink-0" />
+                  <span>Penyimpanan Lokal</span>
+                </span>
+              )}
+
+              <button
+                type="button"
+                onClick={() => {
+                  setCustomDomainInput(baseUrl);
+                  setIsOgSettingsModalOpen(true);
+                }}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-cyan-500/20 border border-cyan-400/40 text-[11px] text-cyan-300 font-bold hover:bg-cyan-500/30 transition-colors cursor-pointer"
+                title="Klik untuk konfigurasi Domain & Anti-Cache WhatsApp"
+              >
+                <Globe className="w-3 h-3 text-cyan-400 shrink-0" />
+                <span>Atur Link &amp; OG WA</span>
+              </button>
             </div>
           </div>
 
-          {/* Progress Bar */}
-          <div className="w-full bg-[#242733] h-2 rounded-full overflow-hidden mb-3">
+          {/* Middle Row: Big Numbers & Percentage Badge */}
+          <div className="flex items-end justify-between gap-3 pt-3.5 pb-2">
+            <div>
+              <p className="text-xs font-semibold text-neutral-300 uppercase tracking-wide mb-1">
+                Undangan Selesai Dikirim
+              </p>
+              <div className="flex items-baseline gap-2 flex-wrap">
+                <span className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+                  {stats.sent}
+                </span>
+                <span className="text-sm font-semibold text-neutral-300">
+                  dari <strong className="text-white font-bold">{stats.total}</strong> total tamu
+                </span>
+              </div>
+            </div>
+
+            <div className="shrink-0 text-right">
+              <span className="inline-block text-2xl sm:text-3xl font-extrabold text-amber-400 leading-none">
+                {stats.progress}%
+              </span>
+              <p className="text-[11px] font-bold text-neutral-300 uppercase tracking-wider mt-0.5">
+                Progres
+              </p>
+            </div>
+          </div>
+
+          {/* Progress Bar (Thicker & Vivid Gradient) */}
+          <div className="w-full bg-[#202536] border border-[#30374C] h-3 rounded-full overflow-hidden my-3">
             <div
-              className="bg-linear-to-r from-amber-500 to-emerald-400 h-full rounded-full transition-all duration-500"
+              className="bg-linear-to-r from-amber-400 via-emerald-400 to-emerald-500 h-full rounded-full transition-all duration-500 shadow-sm"
               style={{ width: `${stats.progress}%` }}
             />
           </div>
 
-          {/* Quick Counter Pills - Mobile Perfect Metric Grid */}
-          <div className="grid grid-cols-3 gap-1.5 sm:gap-2 text-center">
-            <div className="bg-[#1F222C] p-2 sm:p-2.5 rounded-xl border border-[#2D3140] flex flex-col items-center justify-center">
-              <span className="font-bold text-white text-base leading-none mb-1">{stats.total}</span>
-              <p className="text-[10px] text-neutral-400 leading-tight">Total Tamu</p>
+          {/* Bottom Row: 3 High-Contrast Stat Cards */}
+          <div className="grid grid-cols-3 gap-2 pt-1 text-center">
+            {/* Box 1: Total Tamu */}
+            <div className="bg-[#1C2130] border-2 border-[#333C54] p-3 rounded-2xl flex flex-col items-center justify-center shadow-md">
+              <span className="font-extrabold text-white text-2xl sm:text-3xl leading-none mb-1.5">
+                {stats.total}
+              </span>
+              <p className="text-xs font-bold text-neutral-200 tracking-wide leading-tight">
+                Total Tamu
+              </p>
             </div>
-            <div className="bg-[#1F222C] p-2 sm:p-2.5 rounded-xl border border-emerald-500/30 flex flex-col items-center justify-center">
-              <span className="font-bold text-emerald-400 text-base leading-none mb-1">{stats.sent}</span>
-              <p className="text-[10px] text-emerald-400 leading-tight">Terkirim</p>
+
+            {/* Box 2: Sudah Terkirim */}
+            <div className="bg-[#12281E] border-2 border-emerald-500/70 p-3 rounded-2xl flex flex-col items-center justify-center shadow-md shadow-emerald-950/40">
+              <span className="font-extrabold text-emerald-300 text-2xl sm:text-3xl leading-none mb-1.5">
+                {stats.sent}
+              </span>
+              <p className="text-xs font-bold text-emerald-200 tracking-wide leading-tight">
+                Terkirim
+              </p>
             </div>
-            <div className="bg-[#1F222C] p-2 sm:p-2.5 rounded-xl border border-amber-500/30 flex flex-col items-center justify-center">
-              <span className="font-bold text-amber-400 text-base leading-none mb-1">{stats.unsent}</span>
-              <p className="text-[10px] text-amber-400 leading-tight">Belum Kirim</p>
+
+            {/* Box 3: Belum Terkirim */}
+            <div className="bg-[#2B2113] border-2 border-amber-500/70 p-3 rounded-2xl flex flex-col items-center justify-center shadow-md shadow-amber-950/40">
+              <span className="font-extrabold text-amber-300 text-2xl sm:text-3xl leading-none mb-1.5">
+                {stats.unsent}
+              </span>
+              <p className="text-xs font-bold text-amber-200 tracking-wide leading-tight">
+                Belum Kirim
+              </p>
             </div>
           </div>
         </div>
