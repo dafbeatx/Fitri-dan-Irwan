@@ -24,6 +24,9 @@ export function WeddingClientPage() {
   const rawTo = searchParams.get("to");
   const guestName = rawTo ? decodeURIComponent(rawTo).replace(/\+/g, " ") : "Tamu Undangan";
 
+  const [confirmedGuestName, setConfirmedGuestName] = useState(
+    guestName !== "Tamu Undangan" ? guestName : ""
+  );
   const [isCoverOpen, setIsCoverOpen] = useState(false);
   const [autoPlayMusic, setAutoPlayMusic] = useState(false);
   const coverConfig = useCoverConfig();
@@ -96,11 +99,18 @@ export function WeddingClientPage() {
           </ScrollReveal>
 
           <ScrollReveal direction="up" delay={80}>
-            <RsvpSection initialGuestName={guestName !== "Tamu Undangan" ? guestName : ""} />
+            <RsvpSection
+              initialGuestName={confirmedGuestName}
+              onSuccess={(data) => {
+                if (data?.name) {
+                  setConfirmedGuestName(data.name);
+                }
+              }}
+            />
           </ScrollReveal>
 
           <ScrollReveal direction="up" delay={80}>
-            <GuestbookSection initialGuestName={guestName !== "Tamu Undangan" ? guestName : ""} />
+            <GuestbookSection initialGuestName={confirmedGuestName} />
           </ScrollReveal>
 
           <ScrollReveal direction="up" delay={80}>

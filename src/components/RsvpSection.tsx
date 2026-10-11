@@ -10,7 +10,7 @@ import { weddingData } from "@/config/wedding-data";
 
 interface RsvpSectionProps {
   initialGuestName?: string;
-  onSuccess?: () => void;
+  onSuccess?: (data?: { name: string; attendance: AttendanceStatus }) => void;
 }
 
 export function RsvpSection({ initialGuestName = "", onSuccess }: RsvpSectionProps) {
@@ -34,9 +34,11 @@ export function RsvpSection({ initialGuestName = "", onSuccess }: RsvpSectionPro
     setIsLoading(true);
     setErrorMessage(null);
 
+    const submittedName = name.trim();
+
     try {
       const res = await submitRsvp({
-        name: name.trim(),
+        name: submittedName,
         phone: phone.trim() || undefined,
         attendance,
         guests_count: attendance === "hadir" ? guestsCount : 1,
@@ -58,7 +60,18 @@ export function RsvpSection({ initialGuestName = "", onSuccess }: RsvpSectionPro
         } catch {
           // Confetti silent fail
         }
-        if (onSuccess) onSuccess();
+
+        if (onSuccess) {
+          onSuccess({ name: submittedName, attendance });
+        }
+
+        // Langsung diarahkan otomatis ke bagian Ucapan & Doa Restu
+        setTimeout(() => {
+          const guestbookElement = document.getElementById("guestbook");
+          if (guestbookElement) {
+            guestbookElement.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        }, 750);
       }
     } catch {
       setErrorMessage("Koneksi gagal. Silakan periksa jaringan Anda.");
@@ -113,11 +126,28 @@ export function RsvpSection({ initialGuestName = "", onSuccess }: RsvpSectionPro
             <p className="text-sm text-[#556858] max-w-xs mx-auto">
               Konfirmasi kehadiran Anda telah berhasil kami simpan. Kehadiran serta doa restu Anda sangat berarti bagi kami.
             </p>
-            <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
+            {/* Direct Flow ke Ucapan & Doa Restu */}
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  document.getElementById("guestbook")?.scrollIntoView({ behavior: "smooth", block: "start" });
+                }}
+                className="w-full py-3.5 px-6 rounded-full bg-sage-800 text-ivory-50 text-xs font-semibold shadow-md hover:bg-sage-900 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+              >
+                <span>Lanjut Tulis Ucapan &amp; Doa Restu</span>
+                <span>💌</span>
+              </button>
+              <p className="text-[11px] text-sage-600 mt-2">
+                Otomatis mengarahkan ke formulir Ucapan &amp; Doa Restu...
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
               <button
                 type="button"
                 onClick={() => handleOpenWhatsApp(weddingData.rsvpContact.waNumber)}
-                className="mt-2 px-4 py-2 text-xs font-medium text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-full hover:bg-emerald-100 transition-colors min-h-11 inline-flex items-center gap-1.5 cursor-pointer"
+                className="mt-1 px-4 py-2 text-xs font-medium text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-full hover:bg-emerald-100 transition-colors min-h-11 inline-flex items-center gap-1.5 cursor-pointer"
               >
                 <MessageCircle className="w-4 h-4 text-emerald-600" />
                 <span>WA Fitri</span>
@@ -125,7 +155,7 @@ export function RsvpSection({ initialGuestName = "", onSuccess }: RsvpSectionPro
               <button
                 type="button"
                 onClick={() => handleOpenWhatsApp(weddingData.groomContact.waNumber)}
-                className="mt-2 px-4 py-2 text-xs font-medium text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-full hover:bg-emerald-100 transition-colors min-h-11 inline-flex items-center gap-1.5 cursor-pointer"
+                className="mt-1 px-4 py-2 text-xs font-medium text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-full hover:bg-emerald-100 transition-colors min-h-11 inline-flex items-center gap-1.5 cursor-pointer"
               >
                 <MessageCircle className="w-4 h-4 text-emerald-600" />
                 <span>WA Irwan</span>
@@ -133,7 +163,7 @@ export function RsvpSection({ initialGuestName = "", onSuccess }: RsvpSectionPro
               <button
                 type="button"
                 onClick={() => setIsSubmitted(false)}
-                className="mt-2 px-4 py-2 text-xs font-medium text-sage-700 bg-ivory-50 border border-sage-200 rounded-full hover:bg-sage-100 transition-colors min-h-11 cursor-pointer"
+                className="mt-1 px-4 py-2 text-xs font-medium text-sage-700 bg-ivory-50 border border-sage-200 rounded-full hover:bg-sage-100 transition-colors min-h-11 cursor-pointer"
               >
                 Kirim Konfirmasi Baru
               </button>

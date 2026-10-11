@@ -20,9 +20,11 @@ import {
   Home,
   UserCheck,
   RotateCw,
+  MessageCircle,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import { BotanicalDivider, BotanicalFlourishCrest, FloralCardCorner } from "./BotanicalDecor";
+import { weddingData } from "@/config/wedding-data";
 
 interface GuestbookSectionProps {
   initialGuestName?: string;
@@ -39,6 +41,17 @@ export interface GuestCategoryMeta {
   badgeBorder: string;
   avatarBg: string;
 }
+
+// Opsi Kategori Hubungan / Relasi (ditampilkan sebagai Button Selector Interaktif)
+export const RELATIONSHIP_OPTIONS = [
+  { value: "VIP (Tamu Kehormatan)", label: "VIP", emoji: "👑" },
+  { value: "Keluarga", label: "Keluarga", emoji: "🤍" },
+  { value: "Sahabat", label: "Sahabat", emoji: "✨" },
+  { value: "Teman", label: "Teman", emoji: "🌸" },
+  { value: "Teman Kerja", label: "Rekan Kerja", emoji: "💼" },
+  { value: "Teman Sekolah / Kuliah", label: "Sekolah / Kampus", emoji: "🎓" },
+  { value: "Tetangga", label: "Tetangga", emoji: "🏡" },
+];
 
 export function getCategoryMeta(relationship: string): GuestCategoryMeta {
   const rel = (relationship || "").toLowerCase();
@@ -199,9 +212,20 @@ export function GuestbookSection({ initialGuestName = "" }: GuestbookSectionProp
 
   // Form State
   const [name, setName] = useState(initialGuestName);
-  const [relationship, setRelationship] = useState("VIP (Tamu Kehormatan)");
+  const [relationship, setRelationship] = useState<string>("");
+  const [relationshipError, setRelationshipError] = useState(false);
   const [attendance, setAttendance] = useState<AttendanceStatus>("hadir");
   const [message, setMessage] = useState("");
+  const [waRedirectUrl, setWaRedirectUrl] = useState<string | null>(null);
+
+  // Sinkronisasi otomatis saat nama tamu diperbarui (misal dari form RSVP)
+  const [prevInitialGuestName, setPrevInitialGuestName] = useState(initialGuestName);
+  if (initialGuestName !== prevInitialGuestName) {
+    setPrevInitialGuestName(initialGuestName);
+    if (!name || name === "Tamu Undangan") {
+      setName(initialGuestName || "");
+    }
+  }
 
   // Foto State (Hemat Egress & Ringan DB)
   const [photoDataUrl, setPhotoDataUrl] = useState<string | null>(null);
@@ -279,20 +303,41 @@ export function GuestbookSection({ initialGuestName = "" }: GuestbookSectionProp
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !message.trim()) {
-      setErrorMessage("Nama dan ucapan doa wajib diisi.");
+    if (!name.trim()) {
+      setErrorMessage("Silakan masukkan nama Anda.");
+      return;
+    }
+
+    if (!relationship) {
+      setRelationshipError(true);
+      setErrorMessage("Pilihan Hubungan / Relasi wajib dipilih. Silakan klik salah satu tombol kategori di bawah.");
+      const relContainer = document.getElementById("guest-rel-buttons");
+      if (relContainer) {
+        relContainer.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+      return;
+    }
+
+    if (!message.trim()) {
+      setErrorMessage("Ucapan dan doa restu wajib diisi.");
       return;
     }
 
     setIsSubmitting(true);
     setErrorMessage(null);
+    setRelationshipError(false);
+
+    const submittedName = name.trim();
+    const submittedRel = relationship;
+    const submittedAttendance = attendance;
+    const submittedMessage = message.trim();
 
     try {
       const res = await addGuestbookEntry({
-        name: name.trim(),
-        relationship,
-        attendance,
-        message: message.trim(),
+        name: submittedName,
+        relationship: submittedRel,
+        attendance: submittedAttendance,
+        message: submittedMessage,
         photo_url: photoDataUrl || undefined,
       });
 
@@ -301,18 +346,53 @@ export function GuestbookSection({ initialGuestName = "" }: GuestbookSectionProp
         setMessage("");
         setPhotoDataUrl(null);
         setSuccessToast(true);
-        setTimeout(() => setSuccessToast(false), 4000);
+        setTimeout(() => setSuccessToast(false), 7000);
 
         try {
           confetti({
-            particleCount: 50,
-            spread: 60,
+            particleCount: 60,
+            spread: 70,
             origin: { y: 0.7 },
             colors: ["#3F5244", "#C3A16A", "#FAF8F5"],
           });
         } catch {
           // ignore
         }
+
+        // Format pesan WhatsApp terstruktur dan santun
+        const targetPhone = weddingData.rsvpContact?.waNumber || "62881024136818";
+        const relMeta = getCategoryMeta(submittedRel);
+        const statusText =
+          submittedAttendance === "hadir"
+            ? "Berencana Hadir"
+            : submittedAttendance === "ragu"
+            ? "Masih Ragu"
+            : "Berhalangan Hadir";
+
+        const waText =
+          `Assalamu'alaikum Warahmatullahi Wabarakatuh,%0A%0A` +
+          `Selamat atas pernikahan *Fitri & Irwan* 🤍%0A%0A` +
+          `*Nama:* ${encodeURIComponent(submittedName)}%0A` +
+          `*Hubungan / Relasi:* ${encodeURIComponent(`${relMeta.emoji} ${submittedRel}`)}%0A` +
+          `*Kehadiran:* ${encodeURIComponent(statusText)}%0A%0A` +
+          `*Untaian Doa & Restu:*%0A` +
+          `"${encodeURIComponent(submittedMessage)}"%0A%0A` +
+          `Jazakumullah khairan katsiran.`;
+
+        const waUrl = `https://api.whatsapp.com/send?phone=${targetPhone}&text=${waText}`;
+        setWaRedirectUrl(waUrl);
+
+        // Langsung otomatis diarahkan ke WhatsApp
+        setTimeout(() => {
+          try {
+            const waWin = window.open(waUrl, "_blank", "noopener,noreferrer");
+            if (!waWin || waWin.closed || typeof waWin.closed === "undefined") {
+              window.location.href = waUrl;
+            }
+          } catch {
+            window.location.href = waUrl;
+          }
+        }, 600);
       } else {
         setErrorMessage("Gagal mengirim ucapan. Silakan coba lagi.");
       }
@@ -338,8 +418,9 @@ export function GuestbookSection({ initialGuestName = "" }: GuestbookSectionProp
 
   return (
     <section
+      id="guestbook"
       aria-label="Buku Tamu dan Doa Restu"
-      className="py-12 sm:py-16 px-4 max-w-sm mx-auto"
+      className="py-12 sm:py-16 px-4 max-w-sm mx-auto scroll-mt-6"
     >
       <div className="text-center mb-8">
         <div className="flex items-center justify-center gap-2 text-[10px] uppercase tracking-[0.35em] text-gold-600 font-semibold mb-2.5">
@@ -377,10 +458,23 @@ export function GuestbookSection({ initialGuestName = "" }: GuestbookSectionProp
           {successToast && (
             <div
               role="status"
-              className="p-3 mb-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center gap-2"
+              className="p-3 mb-4 rounded-2xl bg-emerald-50 border border-emerald-300/80 text-emerald-900 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 shadow-sm"
             >
-              <Check className="w-4 h-4 text-emerald-600" />
-              <span>Jazakumullah khairan! Doa Anda telah tersimpan.</span>
+              <div className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>Jazakumullah khairan! Doa Anda telah tersimpan dan diarahkan ke WhatsApp.</span>
+              </div>
+              {waRedirectUrl && (
+                <a
+                  href={waRedirectUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-white rounded-full font-medium text-[11px] hover:bg-emerald-700 transition-colors shrink-0 shadow-xs"
+                >
+                  <MessageCircle className="w-3.5 h-3.5" />
+                  Buka WhatsApp
+                </a>
+              )}
             </div>
           )}
 
@@ -400,46 +494,75 @@ export function GuestbookSection({ initialGuestName = "" }: GuestbookSectionProp
               />
             </div>
 
-            <div>
-              <label htmlFor="guest-rel" className="block text-xs font-semibold text-sage-900 mb-1">
-                Hubungan / Relasi
-              </label>
-              <select
-                id="guest-rel"
-                value={relationship}
-                onChange={(e) => setRelationship(e.target.value)}
-                className="input-wedding"
-              >
-                <option value="VIP (Tamu Kehormatan)">👑 VIP (Tamu Kehormatan)</option>
-                <option value="Keluarga">🤍 Keluarga</option>
-                <option value="Sahabat">✨ Sahabat</option>
-                <option value="Teman Kerja">💼 Teman Kerja</option>
-                <option value="Teman Sekolah / Kuliah">🎓 Teman Sekolah / Kuliah</option>
-                <option value="Tetangga">🕊️ Tetangga</option>
-                <option value="Tamu Undangan">🌿 Tamu Undangan</option>
-              </select>
+            {/* Pilihan Hubungan / Relasi (Format Tombol Button Pills Interaktif - Wajib Diisi) */}
+            <div id="guest-rel-buttons" className="space-y-1.5">
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-semibold text-sage-900">
+                  Hubungan / Relasi <span className="text-red-500">*</span>
+                </label>
+                {relationshipError && (
+                  <span className="text-[11px] font-medium text-red-600 animate-pulse">
+                    Wajib dipilih salah satu
+                  </span>
+                )}
+              </div>
 
-              {/* Pratinjau Avatar Emoji Bawaan */}
-              {(() => {
-                const meta = getCategoryMeta(relationship);
-                const CategoryIcon = meta.icon;
-                return (
-                  <div className="mt-1.5 flex items-center justify-between px-3 py-1.5 rounded-xl bg-ivory-50/80 border border-ivory-200/80 text-[11px] text-sage-700">
-                    <div className="flex items-center gap-2">
-                      <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs shadow-2xs ${meta.avatarBg}`}>
-                        {meta.emoji}
+              <div className="flex flex-wrap gap-2 pt-0.5">
+                {RELATIONSHIP_OPTIONS.map((item) => {
+                  const isSelected = relationship === item.value;
+                  return (
+                    <button
+                      key={item.value}
+                      type="button"
+                      onClick={() => {
+                        setRelationship(item.value);
+                        setRelationshipError(false);
+                      }}
+                      className={`inline-flex items-center gap-2 px-3.5 py-2.5 rounded-2xl text-xs sm:text-[13px] font-medium transition-all duration-200 cursor-pointer border whitespace-nowrap min-h-11 ${
+                        isSelected
+                          ? "bg-sage-800 text-ivory-50 border-sage-800 shadow-md ring-2 ring-gold-400 ring-offset-1 scale-[1.02]"
+                          : relationshipError
+                          ? "bg-white text-sage-800 border-red-300 hover:border-red-400 hover:bg-red-50/20"
+                          : "bg-white text-sage-800 border-ivory-200 hover:border-gold-400 hover:bg-gold-50/40"
+                      }`}
+                    >
+                      <span className="text-base shrink-0">{item.emoji}</span>
+                      <span className="font-medium">{item.label}</span>
+                      {isSelected && (
+                        <Check className="w-3.5 h-3.5 text-gold-300 shrink-0" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Pratinjau Kategori & Avatar Terpilih */}
+              {relationship ? (
+                (() => {
+                  const meta = getCategoryMeta(relationship);
+                  const CategoryIcon = meta.icon;
+                  return (
+                    <div className="mt-2 flex items-center justify-between px-3 py-2 rounded-xl bg-ivory-50/90 border border-ivory-200/80 text-[11px] text-sage-700">
+                      <div className="flex items-center gap-2">
+                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs shadow-2xs ${meta.avatarBg}`}>
+                          {meta.emoji}
+                        </div>
+                        <span>
+                          Kategori terpilih: <strong className={meta.textColor}>{meta.emoji} {meta.label}</strong>
+                        </span>
                       </div>
-                      <span>
-                        Avatar bawaan: <strong className={meta.textColor}>{meta.emoji} {meta.label}</strong>
+                      <span className="text-[10px] text-sage-500 flex items-center gap-1 font-medium">
+                        <CategoryIcon className="w-3 h-3 text-gold-600" />
+                        Avatar Siap
                       </span>
                     </div>
-                    <span className="text-[10px] text-sage-500 flex items-center gap-1 font-medium">
-                      <CategoryIcon className="w-3 h-3 text-gold-600" />
-                      Otomatis
-                    </span>
-                  </div>
-                );
-              })()}
+                  );
+                })()
+              ) : (
+                <p className="text-[10px] text-sage-500 mt-1 italic">
+                  Pilih salah satu tombol relasi di atas untuk menentukan badge &amp; emoji Anda di buku tamu.
+                </p>
+              )}
             </div>
 
             <div>
