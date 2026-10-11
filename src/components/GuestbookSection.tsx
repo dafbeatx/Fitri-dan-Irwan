@@ -2,13 +2,12 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { getGuestbookEntries, addGuestbookEntry, isSupabaseConfigured } from "@/lib/supabase";
+import { getGuestbookEntries, addGuestbookEntry } from "@/lib/supabase";
 import { GuestbookEntry, AttendanceStatus } from "@/types/wedding";
 import {
   MessageSquareHeart,
   Send,
   Loader2,
-  Database,
   Sparkles,
   Check,
   Camera,
@@ -354,14 +353,6 @@ export function GuestbookSection({ initialGuestName = "" }: GuestbookSectionProp
         <p className="mt-2 text-xs sm:text-sm text-[#465A49] max-w-xs mx-auto leading-relaxed">
           Tuliskan doa tulus dan harapan terbaik Anda untuk mengiringi langkah baru kami.
         </p>
-
-        {/* Database Source Indicator */}
-        <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium text-sage-600 bg-sage-100/60 border border-sage-200">
-          <Database className="w-3 h-3 text-gold-400" />
-          <span>
-            {isSupabaseConfigured ? "Terhubung ke Supabase Cloud" : "Mode Demo Lokal (Siap ke Supabase)"}
-          </span>
-        </div>
       </div>
 
       <div className="flex flex-col gap-6 items-stretch w-full">
