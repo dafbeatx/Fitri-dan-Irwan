@@ -14,7 +14,7 @@ interface GuestbookSectionProps {
 
 // Kompresi foto sisi klien (Canvas): resize ke maks 450px, kualitas 0.65 WebP/JPEG
 // Menghasilkan ukuran mini (< 35 KB) agar sangat hemat kuota egress, log ingestion, dan database
-async function compressPhotoFile(file: File): Promise<{ dataUrl: string; sizeKb: number }> {
+async function compressPhotoFile(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     if (!file.type.startsWith("image/")) {
       reject(new Error("File yang dipilih harus berupa gambar (JPG, PNG, atau WebP)."));
@@ -62,8 +62,7 @@ async function compressPhotoFile(file: File): Promise<{ dataUrl: string; sizeKb:
           dataUrl = canvas.toDataURL("image/jpeg", 0.65);
         }
 
-        const sizeKb = Math.round((dataUrl.length * 0.75) / 1024);
-        resolve({ dataUrl, sizeKb });
+        resolve(dataUrl);
       };
       img.src = e.target?.result as string;
     };
@@ -86,7 +85,6 @@ export function GuestbookSection({ initialGuestName = "" }: GuestbookSectionProp
 
   // Foto State (Hemat Egress & Ringan DB)
   const [photoDataUrl, setPhotoDataUrl] = useState<string | null>(null);
-  const [photoSizeKb, setPhotoSizeKb] = useState<number | null>(null);
   const [isCompressingPhoto, setIsCompressingPhoto] = useState(false);
   const [photoUploadError, setPhotoUploadError] = useState<string | null>(null);
   const [selectedPhotoModal, setSelectedPhotoModal] = useState<string | null>(null);
@@ -133,14 +131,12 @@ export function GuestbookSection({ initialGuestName = "" }: GuestbookSectionProp
     setPhotoUploadError(null);
 
     try {
-      const result = await compressPhotoFile(file);
-      setPhotoDataUrl(result.dataUrl);
-      setPhotoSizeKb(result.sizeKb);
+      const compressedDataUrl = await compressPhotoFile(file);
+      setPhotoDataUrl(compressedDataUrl);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Gagal mengompresi foto.";
       setPhotoUploadError(msg);
       setPhotoDataUrl(null);
-      setPhotoSizeKb(null);
     } finally {
       setIsCompressingPhoto(false);
       // Reset input value agar dapat memilih file yang sama jika dihapus lalu dipilih lagi
@@ -152,7 +148,6 @@ export function GuestbookSection({ initialGuestName = "" }: GuestbookSectionProp
 
   const handleRemovePhoto = () => {
     setPhotoDataUrl(null);
-    setPhotoSizeKb(null);
     setPhotoUploadError(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
@@ -182,7 +177,6 @@ export function GuestbookSection({ initialGuestName = "" }: GuestbookSectionProp
         setEntries((prev) => [res.entry, ...prev]);
         setMessage("");
         setPhotoDataUrl(null);
-        setPhotoSizeKb(null);
         setSuccessToast(true);
         setTimeout(() => setSuccessToast(false), 4000);
 
@@ -341,18 +335,13 @@ export function GuestbookSection({ initialGuestName = "" }: GuestbookSectionProp
               />
             </div>
 
-            {/* Lampiran Foto (Super Hemat Egress & Log Ingestion) */}
+            {/* Lampiran Foto (Dioptimalkan Otomatis) */}
             <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label htmlFor="guest-photo-input" className="text-xs font-semibold text-sage-900 flex items-center gap-1.5">
-                  <Camera className="w-3.5 h-3.5 text-gold-600" />
-                  <span>Foto Bersama / Swafoto</span>
-                  <span className="text-[10px] font-normal text-sage-500">(Opsional)</span>
-                </label>
-                <span className="text-[10px] font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/60">
-                  Hemat &lt; 35 KB
-                </span>
-              </div>
+              <label htmlFor="guest-photo-input" className="block text-xs font-semibold text-sage-900 mb-1.5 flex items-center gap-1.5">
+                <Camera className="w-3.5 h-3.5 text-gold-600" />
+                <span>Foto Bersama / Swafoto</span>
+                <span className="text-[10px] font-normal text-sage-500">(Opsional)</span>
+              </label>
 
               <input
                 ref={fileInputRef}
@@ -402,7 +391,7 @@ export function GuestbookSection({ initialGuestName = "" }: GuestbookSectionProp
                       <span>Foto siap dikirim</span>
                     </div>
                     <p className="text-[11px] text-sage-600 mt-0.5">
-                      Ukuran: <strong className="font-semibold text-sage-800">~{photoSizeKb} KB</strong> (Sangat ringan &amp; cepat)
+                      Foto otomatis dioptimalkan agar ringan &amp; cepat
                     </p>
                   </div>
                   <button
