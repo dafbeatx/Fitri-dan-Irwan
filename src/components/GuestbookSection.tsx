@@ -21,6 +21,8 @@ import {
   UserCheck,
   RotateCw,
   MessageCircle,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import { BotanicalDivider, BotanicalFlourishCrest, FloralCardCorner } from "./BotanicalDecor";
@@ -237,11 +239,17 @@ export function GuestbookSection({ initialGuestName = "" }: GuestbookSectionProp
   // Filter Kategori State
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string>("all");
 
+  // Pagination Doa Restu (Maksimal 3 doa per halaman agar rapi & tidak panjang ke bawah)
+  const ITEMS_PER_PAGE = 3;
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const wishesCardRef = useRef<HTMLDivElement | null>(null);
+
   const refreshEntries = useCallback(async () => {
     setIsLoading(true);
     try {
       const res = await getGuestbookEntries();
       setEntries(res.data);
+      setCurrentPage(1);
     } catch {
       setErrorMessage("Gagal memuat ucapan.");
     } finally {
@@ -343,6 +351,8 @@ export function GuestbookSection({ initialGuestName = "" }: GuestbookSectionProp
 
       if (res.success) {
         setEntries((prev) => [res.entry, ...prev]);
+        setCurrentPage(1);
+        setSelectedCategoryFilter("all");
         setMessage("");
         setPhotoDataUrl(null);
         setSuccessToast(true);
@@ -413,6 +423,32 @@ export function GuestbookSection({ initialGuestName = "" }: GuestbookSectionProp
       });
     } catch {
       return "Baru saja";
+    }
+  };
+
+  // Filter & Pagination Ucapan Doa (Maksimal 3 doa per halaman agar tidak terlalu panjang ke bawah)
+  const filteredEntries = entries.filter((entry) => {
+    if (selectedCategoryFilter === "all") return true;
+    const catKey = getCategoryMeta(entry.relationship).key;
+    if (selectedCategoryFilter === "vip") return catKey === "vip";
+    if (selectedCategoryFilter === "keluarga") return catKey === "keluarga";
+    if (selectedCategoryFilter === "sahabat") return catKey === "sahabat";
+    if (selectedCategoryFilter === "lainnya") {
+      return !["vip", "keluarga", "sahabat"].includes(catKey);
+    }
+    return true;
+  });
+
+  const totalPages = Math.max(1, Math.ceil(filteredEntries.length / ITEMS_PER_PAGE));
+  const validPage = Math.min(Math.max(1, currentPage), totalPages);
+  const startIndex = (validPage - 1) * ITEMS_PER_PAGE;
+  const paginatedEntries = filteredEntries.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+  const handlePageChange = (newPage: number) => {
+    const targetPage = Math.min(Math.max(1, newPage), totalPages);
+    setCurrentPage(targetPage);
+    if (wishesCardRef.current) {
+      wishesCardRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
     }
   };
 
@@ -690,14 +726,16 @@ export function GuestbookSection({ initialGuestName = "" }: GuestbookSectionProp
         </div>
 
         {/* Wishes List Column (R-27: Loading, Empty, and Populated States) */}
-        <div className="w-full bg-white/90 border border-ivory-200 rounded-3xl p-5 sm:p-6 shadow-sm">
+        <div ref={wishesCardRef} className="w-full bg-white/90 border border-ivory-200 rounded-3xl p-5 sm:p-6 shadow-sm">
           <div className="flex items-center justify-between pb-3 mb-3 border-b border-ivory-200">
             <div>
               <h3 className="font-serif-cormorant text-xl font-semibold text-sage-900">
                 Untaian Doa
               </h3>
               <p className="text-[11px] text-sage-500">
-                {entries.length > 0 ? `${entries.length} doa restu tersimpan` : "Buku tamu doa restu"}
+                {entries.length > 0
+                  ? `${entries.length} doa restu tersimpan${totalPages > 1 ? ` • Hal ${validPage} dari ${totalPages}` : ""}`
+                  : "Buku tamu doa restu"}
               </p>
             </div>
             <button
@@ -750,7 +788,10 @@ export function GuestbookSection({ initialGuestName = "" }: GuestbookSectionProp
                     <button
                       key={filter.key}
                       type="button"
-                      onClick={() => setSelectedCategoryFilter(filter.key)}
+                      onClick={() => {
+                        setSelectedCategoryFilter(filter.key);
+                        setCurrentPage(1);
+                      }}
                       className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium transition-all shrink-0 cursor-pointer ${
                         isActive
                           ? "bg-sage-700 text-ivory-50 shadow-2xs"
@@ -783,21 +824,16 @@ export function GuestbookSection({ initialGuestName = "" }: GuestbookSectionProp
                 Daftar doa telah dibersihkan. Jadilah yang pertama mengirimkan untaian doa dan foto kenangan terindah untuk Fitri &amp; Irwan.
               </p>
             </div>
+          ) : filteredEntries.length === 0 ? (
+            <div className="py-8 px-4 text-center space-y-2 bg-ivory-50/50 rounded-2xl border border-dashed border-ivory-300">
+              <p className="text-xs text-sage-600">
+                Belum ada ucapan doa untuk kategori ini.
+              </p>
+            </div>
           ) : (
-            <div className="space-y-3.5 max-h-130 overflow-y-auto pr-1">
-              {entries
-                .filter((entry) => {
-                  if (selectedCategoryFilter === "all") return true;
-                  const catKey = getCategoryMeta(entry.relationship).key;
-                  if (selectedCategoryFilter === "vip") return catKey === "vip";
-                  if (selectedCategoryFilter === "keluarga") return catKey === "keluarga";
-                  if (selectedCategoryFilter === "sahabat") return catKey === "sahabat";
-                  if (selectedCategoryFilter === "lainnya") {
-                    return !["vip", "keluarga", "sahabat"].includes(catKey);
-                  }
-                  return true;
-                })
-                .map((entry) => {
+            <>
+              <div className="space-y-3.5 pr-0.5">
+                {paginatedEntries.map((entry) => {
                   const meta = getCategoryMeta(entry.relationship);
                   const CategoryIcon = meta.icon;
 
@@ -905,7 +941,81 @@ export function GuestbookSection({ initialGuestName = "" }: GuestbookSectionProp
                     </article>
                   );
                 })}
-            </div>
+              </div>
+
+              {/* Kontrol Navigasi Halaman / Next & Prev (Aktif jika lebih dari 3 ucapan) */}
+              {filteredEntries.length > ITEMS_PER_PAGE && (
+                <div className="pt-4 mt-3 border-t border-ivory-200/90 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+                  {/* Informasi Posisi Doa */}
+                  <span className="text-[11px] text-sage-500 font-medium order-2 sm:order-1 text-center sm:text-left">
+                    Menampilkan {startIndex + 1}–{Math.min(startIndex + ITEMS_PER_PAGE, filteredEntries.length)} dari {filteredEntries.length} doa
+                  </span>
+
+                  {/* Tombol Sebelumnya, Nomor Halaman, dan Berikutnya */}
+                  <div className="flex items-center gap-1.5 order-1 sm:order-2">
+                    <button
+                      type="button"
+                      onClick={() => handlePageChange(validPage - 1)}
+                      disabled={validPage === 1}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold bg-ivory-100 hover:bg-ivory-200 text-sage-800 disabled:opacity-35 disabled:hover:bg-ivory-100 disabled:cursor-not-allowed transition-all cursor-pointer min-h-8 border border-ivory-200/90 shadow-2xs active:scale-95"
+                      aria-label="Halaman doa sebelumnya"
+                    >
+                      <ChevronLeft className="w-3.5 h-3.5 shrink-0" />
+                      <span>Sebelumnya</span>
+                    </button>
+
+                    {/* Tombol Nomor Halaman */}
+                    <div className="flex items-center gap-1 px-1">
+                      {Array.from({ length: totalPages }, (_, idx) => idx + 1)
+                        .filter((page) => {
+                          if (totalPages <= 5) return true;
+                          return (
+                            page === 1 ||
+                            page === totalPages ||
+                            Math.abs(page - validPage) <= 1
+                          );
+                        })
+                        .map((page, idx, arr) => {
+                          const prevPage = arr[idx - 1];
+                          const showEllipsis = prevPage && page - prevPage > 1;
+
+                          return (
+                            <React.Fragment key={page}>
+                              {showEllipsis && (
+                                <span className="text-[11px] text-sage-400 px-0.5 select-none font-medium">…</span>
+                              )}
+                              <button
+                                type="button"
+                                onClick={() => handlePageChange(page)}
+                                className={`w-7 h-7 rounded-full text-xs font-semibold transition-all cursor-pointer flex items-center justify-center active:scale-95 ${
+                                  page === validPage
+                                    ? "bg-sage-700 text-ivory-50 shadow-xs font-bold"
+                                    : "bg-ivory-100/70 hover:bg-ivory-200 text-sage-700 border border-ivory-200/70"
+                                }`}
+                                aria-label={`Buka halaman ${page}`}
+                                aria-current={page === validPage ? "page" : undefined}
+                              >
+                                {page}
+                              </button>
+                            </React.Fragment>
+                          );
+                        })}
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => handlePageChange(validPage + 1)}
+                      disabled={validPage === totalPages}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold bg-sage-700 hover:bg-sage-800 text-ivory-50 disabled:bg-ivory-100 disabled:text-sage-400 disabled:opacity-35 disabled:hover:bg-ivory-100 disabled:cursor-not-allowed transition-all cursor-pointer min-h-8 shadow-2xs active:scale-95"
+                      aria-label="Halaman doa berikutnya"
+                    >
+                      <span>Berikutnya</span>
+                      <ChevronRight className="w-3.5 h-3.5 shrink-0" />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
