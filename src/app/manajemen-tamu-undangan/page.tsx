@@ -39,6 +39,7 @@ import {
   isSupabaseConfigured,
 } from "@/lib/supabase";
 import { GuestCategory, GuestItem } from "@/types/wedding";
+import { GuestManagementTour, TourLauncherButton } from "@/components/GuestManagementTour";
 
 export type { GuestCategory, GuestItem };
 
@@ -449,6 +450,7 @@ export default function ManajemenTamuPage() {
   const [isOgSettingsModalOpen, setIsOgSettingsModalOpen] = useState(false);
   const [customDomainInput, setCustomDomainInput] = useState(baseUrl);
   const [useAntiCache, setUseAntiCache] = useState(true);
+  const [isTourManualOpen, setIsTourManualOpen] = useState(false);
 
   // Close modals on Escape key (Keyboard accessibility R-32)
   useEffect(() => {
@@ -776,6 +778,8 @@ export default function ManajemenTamuPage() {
           </div>
 
           <div className="flex items-center gap-1 shrink-0">
+            <TourLauncherButton onLaunch={() => setIsTourManualOpen(true)} />
+
             <button
               type="button"
               onClick={() => {
@@ -1920,6 +1924,14 @@ CREATE POLICY "Public guests delete access"
           <span>{toastMessage}</span>
         </div>
       )}
+
+      {/* ------------------------------------------------------------------- */}
+      {/* PANDUAN TUR INTERAKTIF (HANYA 1X OTOMATIS KECUALI CLEAR CACHE) */}
+      {/* ------------------------------------------------------------------- */}
+      <GuestManagementTour
+        forceOpen={isTourManualOpen}
+        onClose={() => setIsTourManualOpen(false)}
+      />
     </div>
   );
 }
