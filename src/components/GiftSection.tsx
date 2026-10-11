@@ -13,15 +13,23 @@ export function GiftSection() {
 
   const handleCopy = (accountNumber: string, bankName: string) => {
     if (typeof navigator !== "undefined" && navigator.clipboard) {
-      navigator.clipboard.writeText(accountNumber);
+      // Salin tanpa spasi agar praktis langsung ditempel di aplikasi m-Banking
+      const cleanNumber = accountNumber.replace(/\s+/g, "");
+      navigator.clipboard.writeText(cleanNumber);
       setCopiedBank(bankName);
       setTimeout(() => setCopiedBank(null), 3000);
     }
   };
 
-  const whatsappUrl = `https://wa.me/${gifts.confirmationPhone}?text=${encodeURIComponent(
-    "Assalamu'alaikum Fitri & Irwan, saya ingin mengonfirmasi pengiriman tanda kasih / kado pernikahan."
+  const whatsappUrlBride = `https://wa.me/${gifts.confirmationPhone}?text=${encodeURIComponent(
+    "Assalamu'alaikum Fitri, saya ingin mengonfirmasi pengiriman tanda kasih / kado pernikahan."
   )}`;
+
+  const whatsappUrlGroom = gifts.groomConfirmationPhone
+    ? `https://wa.me/${gifts.groomConfirmationPhone}?text=${encodeURIComponent(
+        "Assalamu'alaikum Irwan, saya ingin mengonfirmasi pengiriman tanda kasih / kado pernikahan."
+      )}`
+    : null;
 
   return (
     <section
@@ -128,8 +136,8 @@ export function GiftSection() {
 
       {/* QRIS & WhatsApp Confirmation Actions */}
       <div className="flex flex-col items-center justify-center gap-3">
-        <div className="flex flex-wrap items-center justify-center gap-3">
-          {gifts.qris.enabled && (
+        {gifts.qris.enabled && (
+          <div className="mb-1">
             <button
               type="button"
               onClick={() => setShowQrisModal(true)}
@@ -139,30 +147,41 @@ export function GiftSection() {
               <QrCode className="w-4 h-4 text-gold-400" />
               <span>Lihat QRIS Tanda Kasih</span>
             </button>
-          )}
-
-          {gifts.confirmationPhone ? (
-            <a
-              href={whatsappUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Konfirmasi pengiriman tanda kasih via WhatsApp"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-xs sm:text-sm font-medium text-ivory-50 bg-sage-700 hover:bg-sage-800 transition-colors shadow-sm min-h-11 focus-visible:ring-2 focus-visible:ring-gold-400"
-            >
-              <MessageCircle className="w-4 h-4 text-gold-100" />
-              <span>Konfirmasi via WhatsApp</span>
-            </a>
-          ) : null}
-        </div>
-
-        {gifts.confirmationPhone && gifts.confirmationHolder && (
-          <p className="text-[11px] text-sage-600">
-            Konfirmasi ke: <span className="font-semibold text-sage-900">{gifts.confirmationHolder}</span>
-            {gifts.confirmationDisplay && (
-              <span className="font-mono text-emerald-700 ml-1">({gifts.confirmationDisplay})</span>
-            )}
-          </p>
+          </div>
         )}
+
+        <div className="w-full max-w-xs mx-auto space-y-2">
+          <p className="text-[11px] text-sage-600 font-medium">
+            Konfirmasi Pengiriman Tanda Kasih:
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            {gifts.confirmationPhone && (
+              <a
+                href={whatsappUrlBride}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Konfirmasi via WhatsApp ke Fitri (Mempelai Wanita)"
+                className="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-full text-xs font-semibold text-ivory-50 bg-sage-700 hover:bg-sage-800 transition-colors shadow-xs min-h-11 focus-visible:ring-2 focus-visible:ring-gold-400"
+              >
+                <MessageCircle className="w-3.5 h-3.5 text-gold-100" />
+                <span>WA Fitri</span>
+              </a>
+            )}
+
+            {whatsappUrlGroom && (
+              <a
+                href={whatsappUrlGroom}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Konfirmasi via WhatsApp ke Irwan (Mempelai Pria)"
+                className="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-full text-xs font-semibold text-emerald-800 bg-emerald-50 border border-emerald-300 hover:bg-emerald-100 transition-colors shadow-xs min-h-11 focus-visible:ring-2 focus-visible:ring-emerald-400"
+              >
+                <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
+                <span>WA Irwan</span>
+              </a>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* QRIS Modal Dialog (R-26, R-32) */}

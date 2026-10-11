@@ -1,4 +1,4 @@
-import { BankAccount, GalleryPhoto, StoryTimelineItem } from "@/types/wedding";
+import { BankAccount, ContactPerson, GalleryPhoto, StoryTimelineItem } from "@/types/wedding";
 
 export const weddingData = {
   couple: {
@@ -121,6 +121,12 @@ export const weddingData = {
     intro: "Doa restu Anda merupakan hadiah terindah bagi kami. Namun jika Anda bermaksud memberikan tanda kasih, Anda dapat menyalurkannya melalui rekening berikut:",
     accounts: [
       {
+        bankName: "BRI",
+        accountNumber: "0810 0110 8628 535",
+        accountHolder: "FITRI ANI RAHAYU",
+        logoUrl: "/images/bri-logo.svg",
+      },
+      {
         bankName: "BCA",
         accountNumber: "7410805477",
         accountHolder: "Irwan Supriatna",
@@ -136,12 +142,36 @@ export const weddingData = {
     confirmationPhone: "62881024136818",
     confirmationHolder: "Fitri Ani Rahayu, S.Mat",
     confirmationDisplay: "+62 881-0241-36818",
+    groomConfirmationPhone: "6285741352173",
+    groomConfirmationHolder: "Irwan Supriatna",
+    groomConfirmationDisplay: "0857-4135-2173",
   },
+
+  contacts: [
+    {
+      role: "Mempelai Wanita",
+      name: "Fitri Ani Rahayu, S.Mat",
+      phoneDisplay: "+62 881-0241-36818",
+      waNumber: "62881024136818",
+    },
+    {
+      role: "Mempelai Pria",
+      name: "Irwan Supriatna",
+      phoneDisplay: "0857-4135-2173",
+      waNumber: "6285741352173",
+    },
+  ] as ContactPerson[],
 
   rsvpContact: {
     name: "Fitri Ani Rahayu, S.Mat",
     phoneDisplay: "+62 881-0241-36818",
     waNumber: "62881024136818",
+  },
+
+  groomContact: {
+    name: "Irwan Supriatna",
+    phoneDisplay: "0857-4135-2173",
+    waNumber: "6285741352173",
   },
 
   audio: {

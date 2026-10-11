@@ -25,6 +25,13 @@ export interface BankAccount {
   logoUrl?: string;
 }
 
+export interface ContactPerson {
+  name: string;
+  phoneDisplay: string;
+  waNumber: string;
+  role?: string;
+}
+
 export interface StoryTimelineItem {
   year: string;
   title: string;

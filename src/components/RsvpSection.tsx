@@ -67,14 +67,14 @@ export function RsvpSection({ initialGuestName = "", onSuccess }: RsvpSectionPro
     }
   };
 
-  const handleOpenWhatsApp = () => {
+  const handleOpenWhatsApp = (recipientPhone?: string) => {
     const statusText = attendance === "hadir" ? "Hadir" : attendance === "ragu" ? "Masih Ragu" : "Tidak Hadir";
     const text = `Assalamu'alaikum, konfirmasi undangan pernikahan Fitri & Irwan.%0A%0A` +
       `*Nama:* ${encodeURIComponent(name.trim() || "Tamu Undangan")}%0A` +
       `*Kehadiran:* ${encodeURIComponent(statusText)}%0A` +
       `*Jumlah Tamu:* ${encodeURIComponent(attendance === "hadir" ? `${guestsCount} Orang` : "-")}%0A` +
       `*Pesan / Doa:* ${encodeURIComponent(message.trim() || "-")}`;
-    const targetPhone = weddingData.rsvpContact?.waNumber || weddingData.gifts.confirmationPhone;
+    const targetPhone = recipientPhone || weddingData.rsvpContact?.waNumber || weddingData.gifts.confirmationPhone;
     const waUrl = `https://wa.me/${targetPhone}?text=${text}`;
     window.open(waUrl, "_blank", "noopener,noreferrer");
   };
@@ -116,35 +116,69 @@ export function RsvpSection({ initialGuestName = "", onSuccess }: RsvpSectionPro
             <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
               <button
                 type="button"
-                onClick={handleOpenWhatsApp}
-                className="mt-2 px-5 py-2 text-xs font-medium text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-full hover:bg-emerald-100 transition-colors min-h-11 inline-flex items-center gap-2"
+                onClick={() => handleOpenWhatsApp(weddingData.rsvpContact.waNumber)}
+                className="mt-2 px-4 py-2 text-xs font-medium text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-full hover:bg-emerald-100 transition-colors min-h-11 inline-flex items-center gap-1.5 cursor-pointer"
               >
                 <MessageCircle className="w-4 h-4 text-emerald-600" />
-                <span>Kirim Bukti ke WhatsApp</span>
+                <span>WA Fitri</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleOpenWhatsApp(weddingData.groomContact.waNumber)}
+                className="mt-2 px-4 py-2 text-xs font-medium text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-full hover:bg-emerald-100 transition-colors min-h-11 inline-flex items-center gap-1.5 cursor-pointer"
+              >
+                <MessageCircle className="w-4 h-4 text-emerald-600" />
+                <span>WA Irwan</span>
               </button>
               <button
                 type="button"
                 onClick={() => setIsSubmitted(false)}
-                className="mt-2 px-5 py-2 text-xs font-medium text-sage-700 bg-ivory-50 border border-sage-200 rounded-full hover:bg-sage-100 transition-colors min-h-11"
+                className="mt-2 px-4 py-2 text-xs font-medium text-sage-700 bg-ivory-50 border border-sage-200 rounded-full hover:bg-sage-100 transition-colors min-h-11 cursor-pointer"
               >
                 Kirim Konfirmasi Baru
               </button>
             </div>
             {/* Info Kontak Konfirmasi Kehadiran */}
             <div className="mt-5 pt-3.5 border-t border-gold-200/50 text-center">
-              <p className="text-[11px] text-sage-600">
-                Penerima Konfirmasi:{" "}
-                <span className="font-semibold text-sage-900">{weddingData.rsvpContact.name}</span>
+              <p className="text-[11px] text-sage-600 font-medium mb-2.5">
+                Kontak Konfirmasi Kehadiran:
               </p>
-              <a
-                href={`https://wa.me/${weddingData.rsvpContact.waNumber}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-xs text-emerald-700 hover:text-emerald-800 font-mono font-medium mt-1 hover:underline"
-              >
-                <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
-                <span>{weddingData.rsvpContact.phoneDisplay}</span>
-              </a>
+              <div className="grid grid-cols-2 gap-2 text-center">
+                <div className="bg-ivory-50/80 rounded-2xl p-2.5 border border-ivory-200 flex flex-col justify-between">
+                  <div>
+                    <span className="text-[10px] text-sage-600 block">Mempelai Wanita</span>
+                    <p className="text-xs font-semibold text-sage-900 mt-0.5 truncate">
+                      {weddingData.rsvpContact.name}
+                    </p>
+                  </div>
+                  <a
+                    href={`https://wa.me/${weddingData.rsvpContact.waNumber}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center gap-1 text-[11px] text-emerald-700 hover:text-emerald-800 font-mono font-medium mt-1.5 hover:underline min-h-11 py-2 px-1"
+                  >
+                    <MessageCircle className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                    <span className="truncate">{weddingData.rsvpContact.phoneDisplay}</span>
+                  </a>
+                </div>
+                <div className="bg-ivory-50/80 rounded-2xl p-2.5 border border-ivory-200 flex flex-col justify-between">
+                  <div>
+                    <span className="text-[10px] text-sage-600 block">Mempelai Pria</span>
+                    <p className="text-xs font-semibold text-sage-900 mt-0.5 truncate">
+                      {weddingData.groomContact.name}
+                    </p>
+                  </div>
+                  <a
+                    href={`https://wa.me/${weddingData.groomContact.waNumber}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center gap-1 text-[11px] text-emerald-700 hover:text-emerald-800 font-mono font-medium mt-1.5 hover:underline min-h-11 py-2 px-1"
+                  >
+                    <MessageCircle className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                    <span className="truncate">{weddingData.groomContact.phoneDisplay}</span>
+                  </a>
+                </div>
+              </div>
             </div>
           </div>
         ) : (
@@ -274,33 +308,67 @@ export function RsvpSection({ initialGuestName = "", onSuccess }: RsvpSectionPro
                 )}
               </button>
 
-              <button
-                type="button"
-                onClick={handleOpenWhatsApp}
-                className="w-full flex items-center justify-center gap-2 py-3 px-6 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-300 font-medium text-xs hover:bg-emerald-100 active:scale-[0.98] transition-all min-h-11 focus-visible:ring-2 focus-visible:ring-emerald-400"
-              >
-                <MessageCircle className="w-4 h-4 text-emerald-600" />
-                <span>Kirim Konfirmasi via WhatsApp</span>
-              </button>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleOpenWhatsApp(weddingData.rsvpContact.waNumber)}
+                  className="w-full flex items-center justify-center gap-1.5 py-3 px-3 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-300 font-medium text-xs hover:bg-emerald-100 active:scale-[0.98] transition-all min-h-11 focus-visible:ring-2 focus-visible:ring-emerald-400 cursor-pointer"
+                >
+                  <MessageCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>WA Fitri</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleOpenWhatsApp(weddingData.groomContact.waNumber)}
+                  className="w-full flex items-center justify-center gap-1.5 py-3 px-3 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-300 font-medium text-xs hover:bg-emerald-100 active:scale-[0.98] transition-all min-h-11 focus-visible:ring-2 focus-visible:ring-emerald-400 cursor-pointer"
+                >
+                  <MessageCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>WA Irwan</span>
+                </button>
+              </div>
             </div>
 
             {/* Kontak Konfirmasi Kehadiran */}
             <div className="pt-3.5 border-t border-gold-200/50 text-center">
-              <p className="text-[11px] text-sage-600">
+              <p className="text-[11px] text-sage-600 font-medium mb-2.5">
                 Kontak Konfirmasi Kehadiran:
               </p>
-              <p className="text-xs font-semibold text-sage-900 mt-0.5">
-                {weddingData.rsvpContact.name}
-              </p>
-              <a
-                href={`https://wa.me/${weddingData.rsvpContact.waNumber}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-xs text-emerald-700 hover:text-emerald-800 font-mono font-medium mt-1 hover:underline"
-              >
-                <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
-                <span>{weddingData.rsvpContact.phoneDisplay}</span>
-              </a>
+              <div className="grid grid-cols-2 gap-2 text-center">
+                <div className="bg-ivory-50/80 rounded-2xl p-2.5 border border-ivory-200 flex flex-col justify-between">
+                  <div>
+                    <span className="text-[10px] text-sage-600 block">Mempelai Wanita</span>
+                    <p className="text-xs font-semibold text-sage-900 mt-0.5 truncate">
+                      {weddingData.rsvpContact.name}
+                    </p>
+                  </div>
+                  <a
+                    href={`https://wa.me/${weddingData.rsvpContact.waNumber}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center gap-1 text-[11px] text-emerald-700 hover:text-emerald-800 font-mono font-medium mt-1.5 hover:underline min-h-11 py-2 px-1"
+                  >
+                    <MessageCircle className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                    <span className="truncate">{weddingData.rsvpContact.phoneDisplay}</span>
+                  </a>
+                </div>
+                <div className="bg-ivory-50/80 rounded-2xl p-2.5 border border-ivory-200 flex flex-col justify-between">
+                  <div>
+                    <span className="text-[10px] text-sage-600 block">Mempelai Pria</span>
+                    <p className="text-xs font-semibold text-sage-900 mt-0.5 truncate">
+                      {weddingData.groomContact.name}
+                    </p>
+                  </div>
+                  <a
+                    href={`https://wa.me/${weddingData.groomContact.waNumber}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center gap-1 text-[11px] text-emerald-700 hover:text-emerald-800 font-mono font-medium mt-1.5 hover:underline min-h-11 py-2 px-1"
+                  >
+                    <MessageCircle className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                    <span className="truncate">{weddingData.groomContact.phoneDisplay}</span>
+                  </a>
+                </div>
+              </div>
             </div>
           </form>
         )}
