@@ -62,9 +62,11 @@ export const metadata: Metadata = {
     siteName: "The Wedding of Fitri & Irwan",
     images: [
       {
-        url: "/og-image.png",
-        width: 1200,
-        height: 630,
+        url: "/og-image.png?v=20261011",
+        secureUrl: "/og-image.png?v=20261011",
+        width: 600,
+        height: 315,
+        type: "image/png",
         alt: "The Wedding of Fitri & Irwan - Jum'at, 23 Oktober 2026",
       },
     ],
@@ -73,7 +75,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "The Wedding of Fitri & Irwan",
     description: "Jum'at, 23 Oktober 2026 • Undangan Pernikahan Digital Fitri & Irwan",
-    images: ["/og-image.png"],
+    images: ["/og-image.png?v=20261011"],
   },
 };
 

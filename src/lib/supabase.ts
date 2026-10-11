@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import { GuestbookEntry, RsvpSubmission, GuestItem } from "@/types/wedding";
+import { GuestbookEntry, RsvpSubmission, GuestItem, GuestCategory } from "@/types/wedding";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -183,15 +183,15 @@ export async function fetchWeddingGuests(): Promise<{
         return { data: [], error: new Error(error.message), source: "local" };
       }
 
-      const mapped: GuestItem[] = (data || []).map((row: any) => ({
-        id: row.id,
-        name: row.name,
-        category: row.category,
-        phone: row.phone || "",
-        notes: row.notes || "",
+      const mapped: GuestItem[] = (data || []).map((row: Record<string, unknown>) => ({
+        id: String(row.id),
+        name: String(row.name),
+        category: (row.category as GuestCategory) || "umum",
+        phone: typeof row.phone === "string" ? row.phone : "",
+        notes: typeof row.notes === "string" ? row.notes : "",
         isSent: Boolean(row.is_sent),
-        sentAt: row.sent_at || undefined,
-        createdAt: row.created_at || new Date().toISOString(),
+        sentAt: typeof row.sent_at === "string" ? row.sent_at : undefined,
+        createdAt: typeof row.created_at === "string" ? row.created_at : new Date().toISOString(),
       }));
 
       return { data: mapped, error: null, source: "supabase" };

@@ -27,6 +27,8 @@ import {
   Cloud,
   RefreshCw,
   AlertCircle,
+  Globe,
+  ExternalLink,
 } from "lucide-react";
 import {
   fetchWeddingGuests,
@@ -313,15 +315,91 @@ function mutateTemplates(
   templateListeners.forEach((cb) => cb());
 }
 
-// External Store: Base URL
-function getOriginSnapshot(): string {
-  return window.location.origin;
+// External Store: Base Domain & WhatsApp Cache Settings
+const DOMAIN_STORAGE_KEY = "fitri_irwan_custom_domain";
+const CACHE_VER_STORAGE_KEY = "fitri_irwan_wa_cache_ver";
+const DEFAULT_PRODUCTION_URL = "https://fitri-dan-irwan.vercel.app";
+
+let cachedDomain: string | null = null;
+const domainListeners = new Set<() => void>();
+
+function getDomainSnapshot(): string {
+  if (typeof window === "undefined") return DEFAULT_PRODUCTION_URL;
+  if (cachedDomain === null) {
+    try {
+      const saved = localStorage.getItem(DOMAIN_STORAGE_KEY);
+      if (saved && saved.trim()) {
+        cachedDomain = saved.trim().replace(/\/+$/, "");
+      } else {
+        const hostname = window.location.hostname;
+        const isLocal =
+          hostname === "localhost" ||
+          hostname === "127.0.0.1" ||
+          hostname.startsWith("192.168.") ||
+          hostname.startsWith("10.") ||
+          hostname.endsWith(".local");
+        // Always default to production URL on local testing so WhatsApp crawlers can reach the OG image
+        cachedDomain = isLocal ? DEFAULT_PRODUCTION_URL : window.location.origin;
+      }
+    } catch {
+      cachedDomain = DEFAULT_PRODUCTION_URL;
+    }
+  }
+  return cachedDomain || DEFAULT_PRODUCTION_URL;
 }
-function getOriginServerSnapshot(): string {
-  return "https://fitri-dan-irwan.vercel.app";
+
+function getDomainServerSnapshot(): string {
+  return DEFAULT_PRODUCTION_URL;
 }
-function subscribeNone(): () => void {
-  return () => {};
+
+function subscribeDomain(callback: () => void): () => void {
+  domainListeners.add(callback);
+  return () => domainListeners.delete(callback);
+}
+
+function mutateDomain(next: string) {
+  const cleaned = next.trim().replace(/\/+$/, "");
+  cachedDomain = cleaned;
+  if (typeof window !== "undefined") {
+    try {
+      localStorage.setItem(DOMAIN_STORAGE_KEY, cleaned);
+    } catch {}
+  }
+  domainListeners.forEach((cb) => cb());
+}
+
+let cachedCacheVer: string | null = null;
+const cacheVerListeners = new Set<() => void>();
+
+function getCacheVerSnapshot(): string {
+  if (typeof window === "undefined") return "1";
+  if (cachedCacheVer === null) {
+    try {
+      cachedCacheVer = localStorage.getItem(CACHE_VER_STORAGE_KEY) || "1";
+    } catch {
+      cachedCacheVer = "1";
+    }
+  }
+  return cachedCacheVer || "1";
+}
+
+function getCacheVerServerSnapshot(): string {
+  return "1";
+}
+
+function subscribeCacheVer(callback: () => void): () => void {
+  cacheVerListeners.add(callback);
+  return () => cacheVerListeners.delete(callback);
+}
+
+function mutateCacheVer(next: string) {
+  cachedCacheVer = next;
+  if (typeof window !== "undefined") {
+    try {
+      localStorage.setItem(CACHE_VER_STORAGE_KEY, next);
+    } catch {}
+  }
+  cacheVerListeners.forEach((cb) => cb());
 }
 
 export default function ManajemenTamuPage() {
@@ -332,9 +410,14 @@ export default function ManajemenTamuPage() {
     getTemplatesServerSnapshot
   );
   const baseUrl = useSyncExternalStore(
-    subscribeNone,
-    getOriginSnapshot,
-    getOriginServerSnapshot
+    subscribeDomain,
+    getDomainSnapshot,
+    getDomainServerSnapshot
+  );
+  const cacheVersion = useSyncExternalStore(
+    subscribeCacheVer,
+    getCacheVerSnapshot,
+    getCacheVerServerSnapshot
   );
 
   // Filter & Search
@@ -361,6 +444,25 @@ export default function ManajemenTamuPage() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [isSqlModalOpen, setIsSqlModalOpen] = useState(false);
   const [isCopiedSql, setIsCopiedSql] = useState(false);
+
+  // WhatsApp OG Image & Domain Settings Modal
+  const [isOgSettingsModalOpen, setIsOgSettingsModalOpen] = useState(false);
+  const [customDomainInput, setCustomDomainInput] = useState(baseUrl);
+  const [useAntiCache, setUseAntiCache] = useState(true);
+
+  // Close modals on Escape key (Keyboard accessibility R-32)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsTemplateModalOpen(false);
+        setPreviewGuest(null);
+        setIsSqlModalOpen(false);
+        setIsOgSettingsModalOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   // Save guests helper
   const saveGuests = useCallback((newGuests: GuestItem[]) => {
@@ -421,22 +523,31 @@ export default function ManajemenTamuPage() {
     };
   }, []);
 
-  // Generate Guest URL & Message
+  // Generate Guest URL & Message with WhatsApp anti-cache support
   const getGuestUrl = useCallback(
-    (name: string) => {
+    (name: string, withAntiCache: boolean = true) => {
       const encoded = encodeURIComponent(name);
-      return `${baseUrl}/?to=${encoded}`;
+      const cleanBase = baseUrl.replace(/\/+$/, "");
+      if (withAntiCache && cacheVersion) {
+        return `${cleanBase}/?to=${encoded}&v=${cacheVersion}`;
+      }
+      return `${cleanBase}/?to=${encoded}`;
     },
-    [baseUrl]
+    [baseUrl, cacheVersion]
   );
 
   const getFormattedMessage = useCallback(
     (guest: GuestItem) => {
-      const template = templates[guest.category] || templates.umum;
-      const url = getGuestUrl(guest.name);
+      const template =
+        templates?.[guest.category] ||
+        templates?.umum ||
+        DEFAULT_MESSAGE_TEMPLATES[guest.category] ||
+        DEFAULT_MESSAGE_TEMPLATES.umum ||
+        "";
+      const url = getGuestUrl(guest.name, useAntiCache);
       return template.replace(/\[nama\]/g, guest.name).replace(/\[link\]/g, url);
     },
-    [templates, getGuestUrl]
+    [templates, getGuestUrl, useAntiCache]
   );
 
   // Handlers
@@ -505,26 +616,29 @@ export default function ManajemenTamuPage() {
     }
   };
 
-  const handleToggleSent = (id: string) => {
-    let updatedGuest: GuestItem | null = null;
-    saveGuests(
-      guests.map((g) => {
-        if (g.id === id) {
-          const nextSent = !g.isSent;
-          updatedGuest = {
-            ...g,
-            isSent: nextSent,
-            sentAt: nextSent ? new Date().toLocaleDateString("id-ID") : undefined,
-          };
-          return updatedGuest;
-        }
-        return g;
-      })
-    );
-    if (isSupabaseConfigured && updatedGuest) {
-      upsertWeddingGuest(updatedGuest).catch(() => {});
-    }
-  };
+  const handleToggleSent = useCallback(
+    (id: string) => {
+      let updatedGuest: GuestItem | null = null;
+      saveGuests(
+        guests.map((g) => {
+          if (g.id === id) {
+            const nextSent = !g.isSent;
+            updatedGuest = {
+              ...g,
+              isSent: nextSent,
+              sentAt: nextSent ? new Date().toLocaleDateString("id-ID") : undefined,
+            };
+            return updatedGuest;
+          }
+          return g;
+        })
+      );
+      if (isSupabaseConfigured && updatedGuest) {
+        upsertWeddingGuest(updatedGuest).catch(() => {});
+      }
+    },
+    [guests, saveGuests]
+  );
 
   const handleCopyLink = (guest: GuestItem) => {
     const url = getGuestUrl(guest.name);
@@ -538,26 +652,31 @@ export default function ManajemenTamuPage() {
     showToast(`✓ Pesan WhatsApp untuk ${guest.name} disalin!`);
   };
 
-  const handleShareWhatsApp = (guest: GuestItem) => {
-    const msg = getFormattedMessage(guest);
-    const encoded = encodeURIComponent(msg);
-
-    // Auto mark as sent
-    if (!guest.isSent) {
-      handleToggleSent(guest.id);
+  const formatWhatsAppPhone = useCallback((phone?: string): string => {
+    if (!phone) return "";
+    let clean = phone.replace(/[^0-9]/g, "");
+    if (!clean) return "";
+    if (clean.startsWith("0")) {
+      clean = "62" + clean.slice(1);
+    } else if (clean.startsWith("8")) {
+      clean = "62" + clean;
     }
+    return clean;
+  }, []);
 
-    let waUrl = `https://api.whatsapp.com/send?text=${encoded}`;
-    if (guest.phone) {
-      let cleanPhone = guest.phone.replace(/[^0-9]/g, "");
-      if (cleanPhone.startsWith("0")) {
-        cleanPhone = "62" + cleanPhone.slice(1);
+  const getWhatsAppUrl = useCallback(
+    (guest: GuestItem) => {
+      const msg = getFormattedMessage(guest);
+      const encoded = encodeURIComponent(msg);
+      const cleanPhone = formatWhatsAppPhone(guest.phone);
+
+      if (cleanPhone) {
+        return `https://wa.me/${cleanPhone}?text=${encoded}`;
       }
-      waUrl = `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encoded}`;
-    }
-
-    window.open(waUrl, "_blank");
-  };
+      return `https://api.whatsapp.com/send?text=${encoded}`;
+    },
+    [getFormattedMessage, formatWhatsAppPhone]
+  );
 
   const handleClearAllGuests = () => {
     if (guests.length === 0) {
@@ -658,6 +777,19 @@ export default function ManajemenTamuPage() {
           <div className="flex items-center gap-1.5">
             <button
               type="button"
+              onClick={() => {
+                setCustomDomainInput(baseUrl);
+                setIsOgSettingsModalOpen(true);
+              }}
+              className="p-2 rounded-xl bg-[#1E212B] hover:bg-[#282C3A] text-emerald-300 text-xs font-semibold flex items-center gap-1.5 border border-emerald-500/20 active:scale-95 transition-all cursor-pointer"
+              title="Pengaturan Domain & Anti-Cache OG Image WhatsApp"
+            >
+              <Globe className="w-4 h-4 text-emerald-400" />
+              <span className="hidden sm:inline text-xs">Domain &amp; OG WA</span>
+            </button>
+
+            <button
+              type="button"
               onClick={() => setIsSqlModalOpen(true)}
               className="p-2 rounded-xl bg-[#1E212B] hover:bg-[#282C3A] text-cyan-300 text-xs font-semibold flex items-center gap-1.5 border border-cyan-500/20 active:scale-95 transition-all cursor-pointer"
               title="Skema Database Supabase & Kode SQL"
@@ -723,6 +855,18 @@ export default function ManajemenTamuPage() {
                     <span>Lokal Offline</span>
                   </span>
                 )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCustomDomainInput(baseUrl);
+                    setIsOgSettingsModalOpen(true);
+                  }}
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-cyan-500/15 border border-cyan-500/30 text-[9px] text-cyan-300 font-semibold hover:bg-cyan-500/25 transition-colors cursor-pointer"
+                  title="Klik untuk konfigurasi Domain & Anti-Cache WhatsApp"
+                >
+                  <Globe className="w-2.5 h-2.5" />
+                  <span className="truncate max-w-30">{baseUrl.replace(/^https?:\/\//, "")}</span>
+                </button>
               </div>
               <h2 className="text-xl font-bold text-white flex items-baseline gap-2">
                 <span>{stats.sent}</span>
@@ -1086,16 +1230,23 @@ export default function ManajemenTamuPage() {
 
                   {/* ACTION BUTTONS (The core requirement: Tinggal Klik Bagikan) */}
                   <div className="grid grid-cols-4 gap-1.5 pt-2 border-t border-[#252835]">
-                    {/* Primary Button: Bagikan via WhatsApp */}
-                    <button
-                      type="button"
-                      onClick={() => handleShareWhatsApp(guest)}
-                      className="col-span-2 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition-all cursor-pointer"
+                    {/* Primary Button: Bagikan via WhatsApp (Native link guarantees popup blocker never blocks) */}
+                    <a
+                      href={getWhatsAppUrl(guest)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => {
+                        if (!guest.isSent) {
+                          handleToggleSent(guest.id);
+                        }
+                        showToast(`✓ Membuka WhatsApp untuk ${guest.name}`);
+                      }}
+                      className="col-span-2 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition-all cursor-pointer no-underline"
                       title="Kirim undangan langsung via WhatsApp"
                     >
                       <MessageCircle className="w-4 h-4 fill-white shrink-0" />
                       <span>Kirim WhatsApp</span>
-                    </button>
+                    </a>
 
                     {/* Copy Full Message */}
                     <button
@@ -1213,17 +1364,26 @@ export default function ManajemenTamuPage() {
             </div>
 
             <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => {
-                  handleShareWhatsApp(previewGuest);
+              <a
+                href={previewGuest ? getWhatsAppUrl(previewGuest) : "#"}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => {
+                  if (!previewGuest) {
+                    e.preventDefault();
+                    return;
+                  }
+                  if (!previewGuest.isSent) {
+                    handleToggleSent(previewGuest.id);
+                  }
+                  showToast(`✓ Membuka WhatsApp untuk ${previewGuest.name}`);
                   setPreviewGuest(null);
                 }}
-                className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition-all"
+                className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition-all no-underline text-center cursor-pointer"
               >
                 <MessageCircle className="w-4 h-4 fill-white" />
                 <span>Kirim ke WhatsApp Sekarang</span>
-              </button>
+              </a>
 
               <button
                 type="button"
@@ -1490,6 +1650,212 @@ CREATE POLICY "Public guests delete access"
                 type="button"
                 onClick={() => setIsSqlModalOpen(false)}
                 className="py-2 px-5 rounded-xl bg-neutral-700 hover:bg-neutral-600 text-white text-xs font-semibold cursor-pointer"
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ------------------------------------------------------------------- */}
+      {/* MODAL 3: PENGATURAN DOMAIN & WHATSAPP OG IMAGE ANTI-CACHE */}
+      {/* ------------------------------------------------------------------- */}
+      {isOgSettingsModalOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="og-modal-title"
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
+          onClick={() => setIsOgSettingsModalOpen(false)}
+        >
+          <div
+            className="bg-[#181A22] border border-[#2B2F3D] rounded-2xl w-full max-w-lg p-5 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header Modal */}
+            <div className="flex items-center justify-between pb-3 border-b border-[#252835]">
+              <div className="flex items-center gap-2">
+                <Globe className="w-5 h-5 text-emerald-400" />
+                <div>
+                  <h3 id="og-modal-title" className="font-bold text-sm sm:text-base text-white">
+                    Pengaturan Link &amp; WhatsApp OG Image
+                  </h3>
+                  <p className="text-[11px] text-neutral-400">
+                    Konfigurasi domain dan anti-cache agar foto pratinjau muncul di WhatsApp
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsOgSettingsModalOpen(false)}
+                className="p-1 rounded-lg text-neutral-400 hover:text-white hover:bg-[#252835] transition-colors cursor-pointer"
+                aria-label="Tutup modal"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Section 1: Domain Undangan */}
+            <div className="space-y-2 bg-[#12141A] p-3.5 rounded-xl border border-[#252835]">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-semibold text-neutral-200 flex items-center gap-1.5">
+                  <Globe className="w-3.5 h-3.5 text-cyan-400" />
+                  Domain Link Undangan
+                </label>
+                <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 font-medium">
+                  {baseUrl.includes("localhost") ? "Lokal" : "Aktif Publik"}
+                </span>
+              </div>
+              <p className="text-[11px] text-neutral-400 leading-relaxed">
+                WhatsApp hanya dapat mengunduh foto pratinjau dari domain publik online. Saat menguji di localhost, link otomatis diarahkan ke domain produksi Vercel.
+              </p>
+              <div className="flex gap-2">
+                <input
+                  type="url"
+                  value={customDomainInput}
+                  onChange={(e) => setCustomDomainInput(e.target.value)}
+                  placeholder="https://fitri-dan-irwan.vercel.app"
+                  className="flex-1 input-dark-tamu px-3 py-2 text-xs font-mono"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    let cleaned = customDomainInput.trim().replace(/\/+$/, "");
+                    if (!cleaned.startsWith("http")) {
+                      cleaned = "https://" + cleaned;
+                    }
+                    mutateDomain(cleaned);
+                    setCustomDomainInput(cleaned);
+                    showToast("✓ Domain link undangan disimpan!");
+                  }}
+                  className="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-xl transition-all cursor-pointer shadow-sm active:scale-95"
+                >
+                  Simpan
+                </button>
+              </div>
+              {baseUrl !== DEFAULT_PRODUCTION_URL && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    mutateDomain(DEFAULT_PRODUCTION_URL);
+                    setCustomDomainInput(DEFAULT_PRODUCTION_URL);
+                    showToast("✓ Domain dikembalikan ke Vercel");
+                  }}
+                  className="text-[10px] text-cyan-400 hover:underline cursor-pointer"
+                >
+                  Reset ke domain bawaan Vercel
+                </button>
+              )}
+            </div>
+
+            {/* Section 2: WhatsApp Anti-Cache System */}
+            <div className="space-y-2.5 bg-[#12141A] p-3.5 rounded-xl border border-[#252835]">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-neutral-200 flex items-center gap-1.5">
+                  <RefreshCw className="w-3.5 h-3.5 text-amber-400" />
+                  Anti-Cache WhatsApp
+                </span>
+                <span className="text-[10px] font-mono bg-amber-500/15 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-md">
+                  Versi Cache: v={cacheVersion}
+                </span>
+              </div>
+              <p className="text-[11px] text-neutral-400 leading-relaxed">
+                Aplikasi WhatsApp menyimpan cache link. Jika gambar belum muncul pada penerima tertentu karena cache lama, perbarui versi cache untuk memaksa WhatsApp mengunduh ulang gambar OpenGraph baru.
+              </p>
+              <div className="flex flex-wrap items-center gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const nextVer = String(Number(cacheVersion || "1") + 1);
+                    mutateCacheVer(nextVer);
+                    showToast(`✓ Versi cache WhatsApp diperbarui ke v=${nextVer}!`);
+                  }}
+                  className="flex-1 py-2 px-3 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-95"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  <span>Perbarui Versi Cache WhatsApp (+1)</span>
+                </button>
+              </div>
+              <div className="flex items-center justify-between pt-1 border-t border-[#252835]">
+                <span className="text-[11px] text-neutral-300">
+                  Sertakan Parameter Anti-Cache (?v=...)
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const next = !useAntiCache;
+                    setUseAntiCache(next);
+                    showToast(
+                      next ? "Anti-cache diaktifkan" : "Anti-cache dinonaktifkan (URL bersih)"
+                    );
+                  }}
+                  className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors cursor-pointer ${
+                    useAntiCache ? "bg-emerald-600" : "bg-neutral-700"
+                  }`}
+                  title={useAntiCache ? "Matikan anti-cache" : "Aktifkan anti-cache"}
+                >
+                  <span
+                    className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+                      useAntiCache ? "translate-x-4.5" : "translate-x-1"
+                    }`}
+                  />
+                </button>
+              </div>
+            </div>
+
+            {/* Section 3: Live Mockup Pratinjau WhatsApp */}
+            <div className="space-y-1.5">
+              <span className="text-xs font-semibold text-neutral-300">
+                Simulasi Kartu Pratinjau di Chat WhatsApp:
+              </span>
+              <div className="bg-[#0B141B] p-3 rounded-xl border border-[#1F2C34] max-w-sm mx-auto shadow-lg">
+                <div className="bg-[#202C33] rounded-lg overflow-hidden border border-[#2A3942] text-left">
+                  <div className="relative w-full h-36 bg-[#111B21] flex items-center justify-center overflow-hidden">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src="/og-image.png"
+                      alt="Pratinjau OG Image"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="p-2.5 space-y-1 bg-[#202C33]">
+                    <div className="text-[10px] uppercase tracking-wider text-[#8696A0] font-medium">
+                      {baseUrl.replace(/^https?:\/\//, "").replace(/\/.*$/, "")}
+                    </div>
+                    <div className="text-xs font-bold text-[#E9EDEF] line-clamp-1">
+                      The Wedding of Fitri &amp; Irwan - Kepada Yth. Contoh Tamu
+                    </div>
+                    <div className="text-[11px] text-[#8696A0] line-clamp-2">
+                      Jum&apos;at, 23 Oktober 2026 • Undangan Pernikahan Digital Fitri &amp; Irwan
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-2 text-[10px] text-[#8696A0] text-center italic">
+                  💡 Tips: Saat tempel link di WhatsApp, tunggu 1-2 detik hingga kartu di atas muncul sebelum klik Kirim.
+                </div>
+              </div>
+            </div>
+
+            {/* Footer Actions */}
+            <div className="flex items-center justify-between pt-2 border-t border-[#252835]">
+              <a
+                href={`https://developers.facebook.com/tools/debug/?q=${encodeURIComponent(
+                  baseUrl.includes("localhost") ? DEFAULT_PRODUCTION_URL : baseUrl
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-cyan-400 hover:text-cyan-300 flex items-center gap-1 transition-colors"
+                title="Buka Facebook/Meta Sharing Debugger untuk cek cache server Meta"
+              >
+                <span>Meta Sharing Debugger</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+
+              <button
+                type="button"
+                onClick={() => setIsOgSettingsModalOpen(false)}
+                className="py-2 px-4 rounded-xl bg-[#222530] hover:bg-[#2C3040] text-white text-xs font-semibold cursor-pointer"
               >
                 Tutup
               </button>
