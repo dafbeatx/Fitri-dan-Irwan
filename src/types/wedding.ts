@@ -6,6 +6,7 @@ export interface GuestbookEntry {
   relationship: string;
   attendance: AttendanceStatus;
   message: string;
+  photo_url?: string;
   created_at: string;
 }
 

@@ -8,8 +8,12 @@ CREATE TABLE IF NOT EXISTS wedding_guestbook (
   relationship TEXT DEFAULT 'Tamu Undangan',
   attendance TEXT NOT NULL CHECK (attendance IN ('hadir', 'tidak_hadir', 'ragu')),
   message TEXT NOT NULL,
+  photo_url TEXT DEFAULT '',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
+
+-- Migrasi tambahan jika tabel wedding_guestbook sudah ada sebelumnya
+ALTER TABLE wedding_guestbook ADD COLUMN IF NOT EXISTS photo_url TEXT DEFAULT '';
 
 -- Index untuk mempercepat query ucapan terbaru
 CREATE INDEX IF NOT EXISTS idx_wedding_guestbook_created_at ON wedding_guestbook(created_at DESC);

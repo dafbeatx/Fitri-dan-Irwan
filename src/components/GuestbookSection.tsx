@@ -1,14 +1,74 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { getGuestbookEntries, addGuestbookEntry, isSupabaseConfigured } from "@/lib/supabase";
 import { GuestbookEntry, AttendanceStatus } from "@/types/wedding";
-import { MessageSquareHeart, Send, Loader2, Database, Sparkles, Check } from "lucide-react";
+import { MessageSquareHeart, Send, Loader2, Database, Sparkles, Check, Camera, X, Maximize2 } from "lucide-react";
 import confetti from "canvas-confetti";
 import { BotanicalDivider, BotanicalFlourishCrest, FloralCardCorner } from "./BotanicalDecor";
 
 interface GuestbookSectionProps {
   initialGuestName?: string;
+}
+
+// Kompresi foto sisi klien (Canvas): resize ke maks 450px, kualitas 0.65 WebP/JPEG
+// Menghasilkan ukuran mini (< 35 KB) agar sangat hemat kuota egress, log ingestion, dan database
+async function compressPhotoFile(file: File): Promise<{ dataUrl: string; sizeKb: number }> {
+  return new Promise((resolve, reject) => {
+    if (!file.type.startsWith("image/")) {
+      reject(new Error("File yang dipilih harus berupa gambar (JPG, PNG, atau WebP)."));
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("Gagal membaca file foto."));
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onerror = () => reject(new Error("Gagal memproses gambar."));
+      img.onload = () => {
+        const MAX_DIMENSION = 450;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_DIMENSION) {
+            height = Math.round((height * MAX_DIMENSION) / width);
+            width = MAX_DIMENSION;
+          }
+        } else {
+          if (height > MAX_DIMENSION) {
+            width = Math.round((width * MAX_DIMENSION) / height);
+            height = MAX_DIMENSION;
+          }
+        }
+
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          reject(new Error("Canvas tidak didukung pada browser Anda."));
+          return;
+        }
+
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = "high";
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Prioritaskan WebP, fallback ke JPEG
+        let dataUrl = canvas.toDataURL("image/webp", 0.65);
+        if (!dataUrl.startsWith("data:image/webp")) {
+          dataUrl = canvas.toDataURL("image/jpeg", 0.65);
+        }
+
+        const sizeKb = Math.round((dataUrl.length * 0.75) / 1024);
+        resolve({ dataUrl, sizeKb });
+      };
+      img.src = e.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  });
 }
 
 export function GuestbookSection({ initialGuestName = "" }: GuestbookSectionProps) {
@@ -23,6 +83,14 @@ export function GuestbookSection({ initialGuestName = "" }: GuestbookSectionProp
   const [relationship, setRelationship] = useState("Sahabat");
   const [attendance, setAttendance] = useState<AttendanceStatus>("hadir");
   const [message, setMessage] = useState("");
+
+  // Foto State (Hemat Egress & Ringan DB)
+  const [photoDataUrl, setPhotoDataUrl] = useState<string | null>(null);
+  const [photoSizeKb, setPhotoSizeKb] = useState<number | null>(null);
+  const [isCompressingPhoto, setIsCompressingPhoto] = useState(false);
+  const [photoUploadError, setPhotoUploadError] = useState<string | null>(null);
+  const [selectedPhotoModal, setSelectedPhotoModal] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const refreshEntries = useCallback(async () => {
     setIsLoading(true);
@@ -57,6 +125,40 @@ export function GuestbookSection({ initialGuestName = "" }: GuestbookSectionProp
     };
   }, []);
 
+  const handlePhotoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsCompressingPhoto(true);
+    setPhotoUploadError(null);
+
+    try {
+      const result = await compressPhotoFile(file);
+      setPhotoDataUrl(result.dataUrl);
+      setPhotoSizeKb(result.sizeKb);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Gagal mengompresi foto.";
+      setPhotoUploadError(msg);
+      setPhotoDataUrl(null);
+      setPhotoSizeKb(null);
+    } finally {
+      setIsCompressingPhoto(false);
+      // Reset input value agar dapat memilih file yang sama jika dihapus lalu dipilih lagi
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
+  const handleRemovePhoto = () => {
+    setPhotoDataUrl(null);
+    setPhotoSizeKb(null);
+    setPhotoUploadError(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !message.trim()) {
@@ -73,11 +175,14 @@ export function GuestbookSection({ initialGuestName = "" }: GuestbookSectionProp
         relationship,
         attendance,
         message: message.trim(),
+        photo_url: photoDataUrl || undefined,
       });
 
       if (res.success) {
         setEntries((prev) => [res.entry, ...prev]);
         setMessage("");
+        setPhotoDataUrl(null);
+        setPhotoSizeKb(null);
         setSuccessToast(true);
         setTimeout(() => setSuccessToast(false), 4000);
 
@@ -236,9 +341,87 @@ export function GuestbookSection({ initialGuestName = "" }: GuestbookSectionProp
               />
             </div>
 
+            {/* Lampiran Foto (Super Hemat Egress & Log Ingestion) */}
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label htmlFor="guest-photo-input" className="text-xs font-semibold text-sage-900 flex items-center gap-1.5">
+                  <Camera className="w-3.5 h-3.5 text-gold-600" />
+                  <span>Foto Bersama / Swafoto</span>
+                  <span className="text-[10px] font-normal text-sage-500">(Opsional)</span>
+                </label>
+                <span className="text-[10px] font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/60">
+                  Hemat &lt; 35 KB
+                </span>
+              </div>
+
+              <input
+                ref={fileInputRef}
+                id="guest-photo-input"
+                type="file"
+                accept="image/*"
+                className="sr-only"
+                onChange={handlePhotoSelect}
+                disabled={isSubmitting || isCompressingPhoto}
+              />
+
+              {photoUploadError && (
+                <p className="text-[11px] text-red-600 mb-2">{photoUploadError}</p>
+              )}
+
+              {!photoDataUrl ? (
+                <label
+                  htmlFor="guest-photo-input"
+                  className={`w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-2xl border border-dashed border-gold-300 hover:border-gold-500 bg-gold-50/30 hover:bg-gold-50/60 text-sage-800 text-xs font-medium cursor-pointer transition-all min-h-11 active:scale-[0.99] ${
+                    isCompressingPhoto ? "opacity-75 cursor-wait" : ""
+                  }`}
+                >
+                  {isCompressingPhoto ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin text-gold-600" />
+                      <span>Mengompresi foto otomatis...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Camera className="w-4 h-4 text-gold-600" />
+                      <span>Lampirkan Foto Kenangan</span>
+                    </>
+                  )}
+                </label>
+              ) : (
+                <div className="flex items-center gap-3 p-2.5 rounded-2xl bg-sage-50/80 border border-sage-200">
+                  <div className="relative w-12 h-12 rounded-xl overflow-hidden border border-gold-300 shadow-2xs shrink-0 bg-white">
+                    <img
+                      src={photoDataUrl}
+                      alt="Pratinjau foto ucapan"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1 text-xs font-semibold text-sage-900">
+                      <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                      <span>Foto siap dikirim</span>
+                    </div>
+                    <p className="text-[11px] text-sage-600 mt-0.5">
+                      Ukuran: <strong className="font-semibold text-sage-800">~{photoSizeKb} KB</strong> (Sangat ringan &amp; cepat)
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleRemovePhoto}
+                    disabled={isSubmitting}
+                    className="p-2.5 rounded-xl text-sage-500 hover:text-red-600 hover:bg-red-50/80 transition-colors min-w-11 min-h-11 flex items-center justify-center cursor-pointer"
+                    title="Hapus foto"
+                    aria-label="Hapus foto terpilih"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+            </div>
+
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || isCompressingPhoto}
               className="btn-press w-full flex items-center justify-center gap-2 py-3 px-5 rounded-full bg-sage-700 text-ivory-50 font-medium text-xs sm:text-sm tracking-wide shadow-sm hover:bg-sage-800 active:scale-95 transition-all disabled:opacity-70 min-h-11 focus-visible:ring-2 focus-visible:ring-gold-400 cursor-pointer"
             >
               {isSubmitting ? (
@@ -314,6 +497,31 @@ export function GuestbookSection({ initialGuestName = "" }: GuestbookSectionProp
                     {entry.message}
                   </p>
 
+                  {/* Foto yang dilampirkan */}
+                  {entry.photo_url && (
+                    <div className="pl-9 pt-1">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedPhotoModal(entry.photo_url || null)}
+                        className="group relative block overflow-hidden rounded-xl border border-gold-200/90 shadow-2xs hover:shadow-sm transition-all max-w-[180px] cursor-pointer text-left focus-visible:ring-2 focus-visible:ring-gold-400"
+                        title="Ketuk untuk memperbesar foto"
+                        aria-label="Lihat foto lampiran ucapan"
+                      >
+                        <img
+                          src={entry.photo_url}
+                          alt={`Foto dari ${entry.name}`}
+                          loading="lazy"
+                          className="max-h-36 w-full object-cover rounded-xl group-hover:scale-105 transition-transform duration-300"
+                        />
+                        <div className="absolute inset-0 bg-sage-900/10 group-hover:bg-sage-900/25 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <span className="p-1.5 rounded-full bg-white/90 text-sage-800 shadow-xs">
+                            <Maximize2 className="w-3.5 h-3.5" />
+                          </span>
+                        </div>
+                      </button>
+                    </div>
+                  )}
+
                   <div className="text-[10px] text-[#556858] pl-9 pt-1">
                     {formatTime(entry.created_at)}
                   </div>
@@ -323,6 +531,41 @@ export function GuestbookSection({ initialGuestName = "" }: GuestbookSectionProp
           )}
         </div>
       </div>
+
+      {/* Lightbox Modal Foto Diperbesar */}
+      {selectedPhotoModal && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Tampilan Foto Kenangan"
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4"
+          onClick={() => setSelectedPhotoModal(null)}
+        >
+          <div
+            className="relative max-w-sm w-full bg-white rounded-3xl p-3 shadow-2xl border border-gold-300/40"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setSelectedPhotoModal(null)}
+              aria-label="Tutup foto"
+              className="absolute top-2 right-2 z-10 p-2.5 rounded-full bg-black/60 text-white hover:bg-black/80 transition-colors min-w-11 min-h-11 flex items-center justify-center cursor-pointer focus-visible:ring-2 focus-visible:ring-gold-400"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <div className="rounded-2xl overflow-hidden bg-black/5 flex items-center justify-center">
+              <img
+                src={selectedPhotoModal}
+                alt="Foto ucapan diperbesar"
+                className="w-full max-h-[70vh] object-contain rounded-2xl"
+              />
+            </div>
+            <p className="text-center text-xs text-sage-600 mt-2.5 font-medium">
+              Foto Kenangan Ucapan &amp; Doa
+            </p>
+          </div>
+        </div>
+      )}
 
       <BotanicalDivider className="mt-14" />
     </section>

@@ -56,26 +56,50 @@ export async function addGuestbookEntry(
 
   if (isSupabaseConfigured && supabase) {
     try {
-      const { data, error } = await supabase
+      const insertPayload: Record<string, unknown> = {
+        name: entry.name,
+        relationship: entry.relationship || "Tamu Undangan",
+        attendance: entry.attendance,
+        message: entry.message,
+      };
+      if (entry.photo_url) {
+        insertPayload.photo_url = entry.photo_url;
+      }
+
+      let res = await supabase
         .from("wedding_guestbook")
-        .insert([
-          {
-            name: entry.name,
-            relationship: entry.relationship || "Tamu Undangan",
-            attendance: entry.attendance,
-            message: entry.message,
-          },
-        ])
+        .insert([insertPayload])
         .select()
         .single();
 
-      if (error) {
-        throw error;
+      // Graceful fallback if database column 'photo_url' hasn't been added yet in user's Supabase
+      if (res.error && entry.photo_url && res.error.message.includes("photo_url")) {
+        console.warn("Supabase photo_url column not found, inserting without photo_url:", res.error.message);
+        res = await supabase
+          .from("wedding_guestbook")
+          .insert([
+            {
+              name: entry.name,
+              relationship: entry.relationship || "Tamu Undangan",
+              attendance: entry.attendance,
+              message: entry.message,
+            },
+          ])
+          .select()
+          .single();
       }
 
-      // Also keep local sync
-      saveLocalGuestbookEntry(data as GuestbookEntry);
-      return { success: true, error: null, entry: data as GuestbookEntry };
+      if (res.error) {
+        throw res.error;
+      }
+
+      // Also keep local sync (preserving photo_url if provided)
+      const finalEntry: GuestbookEntry = {
+        ...(res.data as GuestbookEntry),
+        photo_url: (res.data as GuestbookEntry)?.photo_url || entry.photo_url || "",
+      };
+      saveLocalGuestbookEntry(finalEntry);
+      return { success: true, error: null, entry: finalEntry };
     } catch (err: unknown) {
       const errorObj = err instanceof Error ? err : new Error(String(err));
       // Fallback save locally
