@@ -8,7 +8,6 @@ import {
   FloralCornerSet,
   FloralFrameOverlay,
   FloralDividerAccent,
-  MonogramSealBadge,
 } from "./FloralElements";
 import { CanvaElementWrapper } from "./CanvaElementWrapper";
 import { GoldenStardust } from "./GoldenStardust";
@@ -333,52 +332,9 @@ export function CoverScreen({
         </div>
       )}
 
-      {/* 4. Top Section: Monogram, Title & Divider */}
-      <div className="relative z-20 pt-1 sm:pt-2 px-3 text-center shrink-0 flex flex-col items-center">
-        {/* Monogram Seal Badge */}
-        {config.showMonogram && (
-          <CanvaElementWrapper
-            elementId="monogram"
-            label="Monogram"
-            transform={config.elementTransforms?.["monogram"]}
-            isSelected={selectedElementId === "monogram"}
-            isEditable={isEditable}
-            zoomLevel={zoomLevel}
-            isText={true}
-            textValues={{ single: config.monogramText || "F & I" }}
-            textColor={config.floralColor || "#C3A16A"}
-            fontFamilyName="Monogram"
-            href={config.elementHrefs?.["monogram"] || ""}
-            onUpdateHref={(val) => onUpdateHref?.("monogram", val)}
-            onSelect={onSelectElement || (() => {})}
-            onUpdateTransform={onUpdateTransform}
-            onUpdateText={(field, val) => onUpdateText?.("monogramText", val)}
-            onToggleLock={onToggleLock}
-            className="mb-1 inline-block"
-          >
-            {config.elementHrefs?.["monogram"] ? (
-              <a
-                href={config.elementHrefs["monogram"]}
-                onClick={(e) => handleLinkClick(e, config.elementHrefs?.["monogram"])}
-                className="inline-block hover:scale-105 transition-transform"
-              >
-                <MonogramSealBadge
-                  text={config.monogramText || "F & I"}
-                  color={config.floralColor || "#C3A16A"}
-                  style={config.monogramStyle || "wax_seal"}
-                />
-              </a>
-            ) : (
-              <MonogramSealBadge
-                text={config.monogramText || "F & I"}
-                color={config.floralColor || "#C3A16A"}
-                style={config.monogramStyle || "wax_seal"}
-              />
-            )}
-          </CanvaElementWrapper>
-        )}
-
-        {/* Title / Subtitle */}
+      {/* 4. Top Section: Title & Divider (Positioned safely below the envelope flap & wax seal) */}
+      <div className="relative z-20 pt-23 sm:pt-25 px-3 text-center shrink-0 flex flex-col items-center">
+        {/* Title / Subtitle - Kini tampil jelas tanpa tertutup */}
         <CanvaElementWrapper
           elementId="title"
           label="Judul"
@@ -402,6 +358,7 @@ export function CoverScreen({
           onToggleLock={onToggleLock}
           className="block mx-auto text-center"
         >
+
           {config.elementHrefs?.["title"] ? (
             <a
               href={config.elementHrefs["title"]}
@@ -782,7 +739,7 @@ export function CoverScreen({
   // Envelope Flap Overlay (Animasi Tutup Amplop Membuka ke Atas secara 3D)
   const envelopeFlapLayer = (
     <div
-      className={`absolute top-0 left-0 right-0 h-44 z-35 pointer-events-none transition-all ${
+      className={`absolute top-0 left-0 right-0 h-22 sm:h-24 z-35 pointer-events-none transition-all ${
         isUnfolding ? "animate-envelope-flap" : ""
       }`}
       style={{
@@ -792,19 +749,19 @@ export function CoverScreen({
       aria-hidden="true"
     >
       <svg
-        viewBox="0 0 360 160"
+        viewBox="0 0 360 84"
         className="w-full h-full drop-shadow-md"
         preserveAspectRatio="none"
       >
         <polygon
-          points="0,0 360,0 180,155"
+          points="0,0 360,0 180,68"
           fill="#FAF6ED"
           stroke="#C3A16A"
           strokeWidth="1.5"
           strokeOpacity="0.75"
         />
         <polygon
-          points="15,6 345,6 180,146"
+          points="14,3 346,3 180,61"
           fill="none"
           stroke="#D8BD8C"
           strokeWidth="0.8"
@@ -815,12 +772,12 @@ export function CoverScreen({
 
       {/* Wax Seal Monogram di Ujung Tutup Amplop */}
       <div
-        className={`absolute left-1/2 -translate-x-1/2 top-31.25 z-40 transition-all ${
+        className={`absolute left-1/2 -translate-x-1/2 top-12.75 z-40 transition-all ${
           isUnfolding ? "animate-seal-burst" : ""
         }`}
       >
-        <div className="w-11 h-11 rounded-full bg-linear-to-br from-amber-700 via-gold-600 to-amber-800 border-2 border-gold-300 shadow-lg flex items-center justify-center text-ivory-50 font-serif font-bold text-xs tracking-wider">
-          F &amp; I
+        <div className="w-8.5 h-8.5 rounded-full bg-linear-to-br from-amber-700 via-gold-600 to-amber-800 border-2 border-gold-300 shadow-lg flex items-center justify-center text-ivory-50 font-serif font-bold text-[10px] tracking-wider">
+          {config.monogramText || "F & I"}
         </div>
       </div>
     </div>
@@ -830,7 +787,10 @@ export function CoverScreen({
   if (isEmbedPreview) {
     return (
       <div className="w-full h-full flex items-center justify-center bg-[#0F1015] overflow-hidden">
-        {cardContent}
+        <div className="w-full h-full relative overflow-hidden flex flex-col justify-between">
+          {envelopeFlapLayer}
+          {cardContent}
+        </div>
       </div>
     );
   }
